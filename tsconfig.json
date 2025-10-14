@@ -28,7 +28,7 @@
     "etc"
   ],
   "include": [
-    "./src/**/*",
+    "./src/**/*", "src/loaders/absenceTableLoader.tsx",
   ],
   "types": [
     "node",

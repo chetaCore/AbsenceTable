@@ -1,9 +1,7 @@
-// Точка входа для отладки контролов в режиме standalone (отдельное приложение, без веб клиента Sungero).
 
-// import { container } from 'webpack';
 import api from './host-api-stub';
 import context from './host-context-stub';
-import loadApp from './src/loaders/control-loader';
+import loadApp from './src/loaders/absenceTableLoader';
 
 let args = {
     // Контейнер элемента.
