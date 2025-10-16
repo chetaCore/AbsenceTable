@@ -20,20 +20,25 @@ export const AbsenceSwitcher: React.FC<AbsenceSwitcherProps> = ({
   tooltipOff = 'Выкл',
   switchColor = '#1976d2',
 }) => {
+  const iconStyle = (active: boolean) => ({
+    color: active ? switchColor : 'rgba(0,0,0,0.5)',
+    transition: 'color 0.3s',
+  });
+
   return (
     <Tooltip title={checked ? tooltipOn : tooltipOff}>
       <Box display="flex" alignItems="center" gap={1}>
         {/* Иконка слева */}
-        <IconOff fontSize="small" />
+        <IconOff fontSize="small" style={iconStyle(!checked)} />
 
         <Switch
           checked={checked}
           onChange={(e, checked) => onChange(checked)}
-          color={switchColor as 'primary' | 'secondary'}
+          color={checked ? 'primary' : 'default'} // нужен только для стиля Switch
         />
 
         {/* Иконка справа */}
-        <IconOn fontSize="small" />
+        <IconOn fontSize="small" style={iconStyle(checked)} />
       </Box>
     </Tooltip>
   );

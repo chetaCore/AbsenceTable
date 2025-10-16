@@ -66,6 +66,7 @@ const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api }) => {
           activeAbsences={activeAbsences}
           onAbsenceToggle={handleAbsenceToggle}
           onShowIconClick={() => true}
+          onShowMonthClick={() => true}
         />
 
         <DataGrid

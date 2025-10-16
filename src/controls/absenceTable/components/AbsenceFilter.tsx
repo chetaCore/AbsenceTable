@@ -17,6 +17,7 @@ interface AbsenceFilterProps {
     activeAbsences: Record<AbsenceType, boolean>;
     onAbsenceToggle: (type: AbsenceType) => void;
     onShowIconClick: () => boolean;
+    onShowMonthClick: () => boolean;
 }
 
 export const AbsenceFilter: React.FC<AbsenceFilterProps> = ({
@@ -25,8 +26,10 @@ export const AbsenceFilter: React.FC<AbsenceFilterProps> = ({
     activeAbsences,
     onAbsenceToggle,
     onShowIconClick,
+    onShowMonthClick
 }) => {
     const [showIcons, setShowIcons] = React.useState(false);
+    const [showMonth, setShowMonth] = React.useState(false);
 
     const absenceButtons = [
         { type: AbsenceType.vacation, label: 'Отпуск' },
@@ -83,21 +86,28 @@ export const AbsenceFilter: React.FC<AbsenceFilterProps> = ({
                     <Stack direction="column" spacing={1} alignItems="center">
                         <AbsenceSwitcher
                             checked={showIcons}
-                            onChange={setShowIcons}
+                            onChange={(value) => {
+                                setShowIcons(value); // локальное обновление для визуала
+                                onShowIconClick();    // вызываем функцию из props
+                            }}
                             iconOn={Image}
                             iconOff={Edit}
                             tooltipOn="Показать иконки"
                             tooltipOff="Показать текст"
                         />
                         <AbsenceSwitcher
-                            checked={showIcons}
-                            onChange={setShowIcons}
+                            checked={showMonth}
+                            onChange={(value) => {
+                                setShowMonth(value);
+                                onShowMonthClick();  // вызываем функцию из props
+                            }}
                             iconOn={MonthIcon}
                             iconOff={WeekIcon}
                             tooltipOn="Месяц"
                             tooltipOff="Неделя"
                         />
                     </Stack>
+
 
 
                     <Divider orientation="vertical" flexItem sx={{ mx: 2, bgcolor: '#ccc' }} />

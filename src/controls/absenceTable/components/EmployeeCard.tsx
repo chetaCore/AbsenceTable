@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Avatar,
   Card,
@@ -17,11 +17,12 @@ interface EmployeeCardProps {
 
 export const EmployeeCard: React.FC<EmployeeCardProps> = ({
   employee: { name, icon, department, uri },
-
 }) => {
-
-  const randomColor = () =>
-    `#${Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0")}`;
+  const avatarColor = useMemo(() => {
+    return `#${Math.floor(Math.random() * 0xffffff)
+      .toString(16)
+      .padStart(6, "0")}`;
+  }, []); 
 
   return (
     <Paper
@@ -50,14 +51,14 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({
               sx={{
                 width: 40,
                 height: 40,
-                bgcolor: randomColor(),
+                bgcolor: avatarColor,
                 fontSize: 18,
               }}
             >
               {name[0]}
             </Avatar>
 
-            <Divider orientation="vertical" flexItem sx={{ mx: 2, bgcolor: '#ccc' }} />
+            <Divider orientation="vertical" flexItem sx={{ mx: 2, bgcolor: "#ccc" }} />
 
             <Stack>
               <Typography
@@ -68,8 +69,6 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({
               >
                 {name}
               </Typography>
-
-              <Divider flexItem sx={{ mx: 2, bgcolor: '#ccc' }} />
 
               <Typography
                 textAlign="left"

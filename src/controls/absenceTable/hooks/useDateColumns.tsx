@@ -69,12 +69,10 @@ export function useDateColumns({
     headerAlign: 'center',
     sortable: false,
     renderCell: (params) => {
-
       const cellDate = new Date(today.getFullYear(), today.getMonth(), parseInt(params.field));
       const isToday = stripTime(cellDate).getTime() === today.getTime();
 
       if (!params.value || params.value.length === 0) {
-
         return (
           <Box
             sx={{
@@ -86,12 +84,23 @@ export function useDateColumns({
         );
       }
 
-      let excludeTypes = params.value as EmployeeAbsence[];
-      excludeTypes = excludeTypes.filter((t) => !excludeTypes.includes(t));
+      const filteredAbsences = (params.value as EmployeeAbsence[]).filter(
+        (a) => !excludeTypes.includes(a.type)
+      );
 
-      if (excludeTypes.length === 0) return null;
+      if (filteredAbsences.length === 0) {
+        return (
+          <Box
+            sx={{
+              width: '100%',
+              height: '100%',
+              bgcolor: isToday ? 'rgba(0, 0, 0, 0.1)' : 'transparent',
+            }}
+          />
+        );
+      }
 
-      return <AbsenceCapsule absences={params.value} isToday/>;
+      return <AbsenceCapsule absences={filteredAbsences} isToday={isToday} />;
     },
   }));
 }
