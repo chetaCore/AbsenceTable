@@ -24,14 +24,15 @@ export const AbsenceButton: React.FC<AbsenceButtonProps> = ({ type, active = fal
         '&:hover': {
           bgcolor: active ? color : '#e0e0e0',
         },
-        borderRadius: '16px', // скругление капсулы
-        textTransform: 'none', // чтобы текст не был uppercase
-        px: 2, // отступ слева/справа
-        py: 0.5, // отступ сверху/снизу
+        borderRadius: '16px', 
+        textTransform: 'none',
+        px: 2,
+        py: 0.5, 
         minHeight: 36,
         display: 'flex',
         alignItems: 'center',
-        gap: 1, // расстояние между иконкой и текстом
+        gap: 1,
+        width: '300px',
       }}
     >
       {children}

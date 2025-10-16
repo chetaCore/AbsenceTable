@@ -1,20 +1,19 @@
-import { Employee } from '../types';
-import { EmployeeAbsence } from '../hooks/useEmployeeAbsences';
-import { getMonday } from './absenceCommon';
+import { Employee, EmployeeAbsence } from '../types';
 
 export function buildEmployeeRows(
   employees: Employee[],
   selectedDate: Date,
   absences: EmployeeAbsence[]
 ) {
-  const monday = getMonday(selectedDate);
+  const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   return employees.map(emp => {
-    const row: any = { id: emp.id, name: emp.name };
+    const row: any = { id: emp.id, employee: emp };
 
-    for (let i = 0; i < 7; i++) {
-      const currentDate = new Date(monday);
-      currentDate.setDate(monday.getDate() + i);
+    for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
+      const currentDate = new Date(year, month, dayNum);
 
       const todaysAbsences = absences.filter(a =>
         a.employeeId === emp.id &&
@@ -22,7 +21,7 @@ export function buildEmployeeRows(
         currentDate <= stripTime(new Date(a.endDate))
       );
 
-      row[`day_${i}`] = todaysAbsences.length > 0 ? todaysAbsences.map(a => a.type) : null;
+      row[`${currentDate.getDate()}`] = todaysAbsences.length > 0 ? todaysAbsences : null;
     }
 
     return row;

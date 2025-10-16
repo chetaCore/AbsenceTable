@@ -2,8 +2,7 @@
 import React from 'react';
 import { useMemo } from 'react';
 import { GridColDef } from '@mui/x-data-grid';
-import { Employee } from '../types';
-import { Box } from '@mui/material';
+import { EmployeeCard } from '../components/EmployeeCard';
 
 interface useEmployeeColumnsProps {
   width: number;
@@ -16,7 +15,7 @@ export function useEmployeeColumns({ width, minWidth, employeeCount }: useEmploy
     const employeeColumn: GridColDef = {
       headerName: `Сотрудники (${employeeCount})`,
       headerAlign: "center",
-      field: 'name',
+      field: 'employee',
       width,
       minWidth,
       align: 'center', 
@@ -25,19 +24,7 @@ export function useEmployeeColumns({ width, minWidth, employeeCount }: useEmploy
       renderCell: (params) => {
         if (!params.value) return null;
 
-        return (
-          <Box
-            sx={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 700,
-            }}
-          >
-            {params.value}
-          </Box>
+        return (<EmployeeCard employee={params.value}/>
         );
       }
     };
