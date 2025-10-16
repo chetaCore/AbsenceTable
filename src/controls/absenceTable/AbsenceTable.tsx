@@ -8,13 +8,14 @@ import { buildEmployeeRows } from './tools/buildEmployeeRows';
 import { useDateColumns } from './hooks/useDateColumns';
 import { GRID_RU_LOCALE_TEXT } from './gridLocale.ru';
 import { getTheme } from './tools/tableStyle';
-import { DataGrid } from '@mui/x-data-grid';
-import { subWeeks, addWeeks } from 'date-fns';
+import { DataGrid, GridToolbarProps } from '@mui/x-data-grid';
 import { AbsenceType } from './types';
 import { AbsenceFilter } from './components/AbsenceFilter';
 
 const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isShowIcons, setIsShowIcons] = React.useState(false);
+  const [isShowMonth, setIsShowMonth] = React.useState(false);
   const employeesData = useEmployees();
   const employeeColumns = useEmployeeColumns({ width: 300, minWidth: 300, employeeCount: employeesData?.length });
   const absences = useEmployeeAbsences();
@@ -28,20 +29,21 @@ const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api }) => {
   });
 
   const activeExcludeTypes = Object.entries(activeAbsences)
-  .filter(([_, isActive]) => !isActive)
-  .map(([type]) => Number(type) as AbsenceType);
-  
+    .filter(([_, isActive]) => !isActive)
+    .map(([type]) => Number(type) as AbsenceType);
+
   const weekDaysColumns = useDateColumns({
     width: 50,
     minWidth: 60,
     date: selectedDate,
     excludeTypes: activeExcludeTypes,
-    period: 'Month'
+    period: isShowMonth ? 'Month' : 'Week',
+    isShowIcons
   });
-  
+
+
   const allColumns = [...employeeColumns, ...weekDaysColumns];
   const rows = buildEmployeeRows(employeesData.map(e => e.employee), selectedDate, absences);
-
 
   const handleAbsenceToggle = (type: AbsenceType) => {
     setActiveAbsences((prev) => ({
@@ -62,11 +64,11 @@ const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api }) => {
       >
         <AbsenceFilter
           selectedDate={selectedDate}
-          onDateChange={setSelectedDate}
           activeAbsences={activeAbsences}
+          onDateChange={setSelectedDate}
           onAbsenceToggle={handleAbsenceToggle}
-          onShowIconClick={() => true}
-          onShowMonthClick={() => true}
+          onShowIconClick={setIsShowIcons}
+          onShowMonthClick={setIsShowMonth}
         />
 
         <DataGrid
@@ -78,10 +80,18 @@ const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api }) => {
           showColumnVerticalBorder
           getRowHeight={() => 60}
           localeText={GRID_RU_LOCALE_TEXT}
+          showToolbar
+          sx={{
+            maxHeight: 60 * 10,
+            '& .MuiDataGrid-virtualScroller': {
+              overflowY: 'auto',
+            },
+          }}
         />
       </Box>
     </ThemeProvider>
   );
 };
+
 
 export default AbsenceTable;

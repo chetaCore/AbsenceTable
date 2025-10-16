@@ -1,28 +1,32 @@
 import React from 'react';
-import { Box, Tooltip } from '@mui/material';
+import { Box, Tooltip, Typography } from '@mui/material';
 import { AbsenceType, EmployeeAbsence } from '../types';
 import { getAbsenceTypeName, getColor, getIcon } from '../tools/absenceCommon';
 
 interface AbsenceCapsuleProps {
   absences: EmployeeAbsence[];
   isToday: boolean;
+  isShowIcons: boolean;
 }
 
-export const AbsenceCapsule: React.FC<AbsenceCapsuleProps> = ({ absences, isToday }) => {
+export const AbsenceCapsule: React.FC<AbsenceCapsuleProps> = ({
+  absences,
+  isToday,
+  isShowIcons,
+}) => {
   if (!absences || absences.length === 0) return null;
 
-  // Определяем рабочие часы сотрудника
   const startInterval = Math.min(...absences.map(a => a.startWorkHour));
   const endInterval = Math.max(...absences.map(a => a.endWorkHour));
   const totalHours = endInterval - startInterval;
 
-  // Группировка по дате
+  // Группируем по дате
   const groupedByDate: Record<string, EmployeeAbsence[]> = {};
-  absences.forEach(a => {
-    const dayKey = a.startDate.toDateString();
-    if (!groupedByDate[dayKey]) groupedByDate[dayKey] = [];
-    groupedByDate[dayKey].push(a);
-  });
+  for (const abs of absences) {
+    const key = abs.startDate.toDateString();
+    if (!groupedByDate[key]) groupedByDate[key] = [];
+    groupedByDate[key].push(abs);
+  }
 
   // Определяем пересечения
   const overlapsByDay: Record<string, EmployeeAbsence[][]> = {};
@@ -33,8 +37,8 @@ export const AbsenceCapsule: React.FC<AbsenceCapsuleProps> = ({ absences, isToda
     sorted.forEach(abs => {
       let placed = false;
       for (const layer of layers) {
-        const lastInLayer = layer[layer.length - 1];
-        if (abs.startDate >= lastInLayer.endDate) {
+        const last = layer[layer.length - 1];
+        if (abs.startDate >= last.endDate) {
           layer.push(abs);
           placed = true;
           break;
@@ -46,26 +50,27 @@ export const AbsenceCapsule: React.FC<AbsenceCapsuleProps> = ({ absences, isToda
     overlapsByDay[day] = layers;
   }
 
-  const maxOverlaps = Math.max(...Object.values(overlapsByDay).map(layers => layers.length));
+  const maxOverlaps = Math.max(...Object.values(overlapsByDay).map(l => l.length));
 
   return (
-
     <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
-      {/* Фон для пустых областей */}
-      {(isToday && <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 6, 
-          bgcolor: 'rgba(0,0,0,0.05)',
-          borderRadius: 1,
-          zIndex: 0,
-        }}
-      />)}
+      {/* Подсветка текущего дня */}
+      {isToday && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 6,
+            bgcolor: 'rgba(0,0,0,0.05)',
+            borderRadius: 1,
+            zIndex: 0,
+          }}
+        />
+      )}
 
-      {/* Отсутствия */}
+      {/* Основные полоски */}
       {Object.entries(overlapsByDay).map(([dayKey, layers]) =>
         layers.map((layer, layerIndex) =>
           layer.map((absence, i) => {
@@ -76,9 +81,9 @@ export const AbsenceCapsule: React.FC<AbsenceCapsuleProps> = ({ absences, isToda
             const leftPercent =
               ((Math.max(startHour, startInterval) - startInterval) / totalHours) * 100;
             const widthPercent =
-              ((Math.min(endHour, endInterval) - Math.max(startHour, startInterval)) / totalHours) *
+              ((Math.min(endHour, endInterval) - Math.max(startHour, startInterval)) /
+                totalHours) *
               100;
-
             if (widthPercent <= 0) return null;
 
             const heightPercent = 100 / maxOverlaps;
@@ -86,13 +91,13 @@ export const AbsenceCapsule: React.FC<AbsenceCapsuleProps> = ({ absences, isToda
 
             const tooltipTitle = (
               <Box sx={{ p: 1 }}>
-                <div>
-                  <b>{getAbsenceTypeName(type as AbsenceType)}: </b>
-                  {startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} —{' '}
-                  {endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
+                <b>{getAbsenceTypeName(type as AbsenceType)}</b>
+                <br />
+                {startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} —{' '}
+                {endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </Box>
             );
+
 
             return (
               <Tooltip key={`${dayKey}-${i}-${layerIndex}`} title={tooltipTitle} arrow>
@@ -114,9 +119,35 @@ export const AbsenceCapsule: React.FC<AbsenceCapsuleProps> = ({ absences, isToda
                     overflow: 'hidden',
                     cursor: 'pointer',
                     zIndex: 1,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      opacity: 1,
+                      transform: 'scaleY(1.1)',
+                      boxShadow: '0 0 4px rgba(0,0,0,0.3)',
+                    },
+                    '&:hover .absence-time': {
+                      opacity: 1,
+                      transform: 'translateY(0)',
+                    },
                   }}
                 >
-                  {IconComponent && <IconComponent fontSize="small" />}
+
+                  {isShowIcons && IconComponent ? (
+                    <IconComponent fontSize="small" />
+                  ) : (
+                    <Typography
+                      sx={{
+                        fontSize: '0.65rem',
+                        textAlign: 'center',
+                        width: '100%',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {getAbsenceTypeName(type)}
+                    </Typography>
+                  )}
                 </Box>
               </Tooltip>
             );
@@ -147,6 +178,5 @@ export const AbsenceCapsule: React.FC<AbsenceCapsuleProps> = ({ absences, isToda
         ))}
       </Box>
     </Box>
-
   );
 };

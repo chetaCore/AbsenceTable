@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Switch, Tooltip } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 interface AbsenceSwitcherProps {
   checked: boolean;
@@ -8,7 +9,8 @@ interface AbsenceSwitcherProps {
   iconOff: React.ElementType;
   tooltipOn?: string;
   tooltipOff?: string;
-  switchColor?: string;
+  colorOn?: 'success' | 'primary' | 'secondary' | 'warning' | 'info' | 'error';
+  colorOff?: 'success' | 'primary' | 'secondary' | 'warning' | 'info' | 'error';
 }
 
 export const AbsenceSwitcher: React.FC<AbsenceSwitcherProps> = ({
@@ -18,27 +20,46 @@ export const AbsenceSwitcher: React.FC<AbsenceSwitcherProps> = ({
   iconOff: IconOff,
   tooltipOn = 'Вкл',
   tooltipOff = 'Выкл',
-  switchColor = '#1976d2',
+  colorOff = 'primary',
+  colorOn = 'success',
 }) => {
-  const iconStyle = (active: boolean) => ({
-    color: active ? switchColor : 'rgba(0,0,0,0.5)',
+  const theme = useTheme();
+
+  const iconStyle = (isActive: boolean, colorKey: typeof colorOn) => ({
+    color: isActive
+      ? theme.palette[colorKey].main
+      : theme.palette.action.disabled,
     transition: 'color 0.3s',
   });
 
   return (
     <Tooltip title={checked ? tooltipOn : tooltipOff}>
       <Box display="flex" alignItems="center" gap={1}>
-        {/* Иконка слева */}
-        <IconOff fontSize="small" style={iconStyle(!checked)} />
+        {/* Иконка слева (off) */}
+        <IconOff fontSize="small" style={iconStyle(!checked, colorOff)} />
 
+        {/* Переключатель */}
         <Switch
           checked={checked}
           onChange={(e, checked) => onChange(checked)}
-          color={checked ? 'primary' : 'default'} // нужен только для стиля Switch
+          sx={{
+            '& .MuiSwitch-switchBase.Mui-checked': {
+              color: theme.palette[colorOn].main,
+            },
+            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+              backgroundColor: theme.palette[colorOn].main,
+            },
+            '& .MuiSwitch-switchBase:not(.Mui-checked)': {
+              color: theme.palette[colorOff].main,
+            },
+            '& .MuiSwitch-switchBase:not(.Mui-checked) + .MuiSwitch-track': {
+              backgroundColor: theme.palette[colorOff].main,
+            },
+          }}
         />
 
-        {/* Иконка справа */}
-        <IconOn fontSize="small" style={iconStyle(checked)} />
+        {/* Иконка справа (on) */}
+        <IconOn fontSize="small" style={iconStyle(checked, colorOn)} />
       </Box>
     </Tooltip>
   );

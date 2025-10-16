@@ -13,6 +13,12 @@ export function getMonday(date: Date) {
   return new Date(d.setDate(diff));
 }
 
+export function stripTime(date: Date): Date {
+  const copy = new Date(date);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
+}
+
 export function getColor(type: AbsenceType): string {
   switch (type) {
     case AbsenceType.vacation:

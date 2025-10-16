@@ -10,7 +10,12 @@ export function buildEmployeeRows(
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   return employees.map(emp => {
-    const row: any = { id: emp.id, employee: emp };
+    const row: any = { 
+      id: emp.id, 
+      employee: emp,
+      name: emp.name || '',
+      department: emp.department || '',
+    };
 
     for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
       const currentDate = new Date(year, month, dayNum);

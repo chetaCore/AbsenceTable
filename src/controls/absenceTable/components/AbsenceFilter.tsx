@@ -13,23 +13,23 @@ import MonthIcon from '@mui/icons-material/CalendarMonth';
 
 interface AbsenceFilterProps {
     selectedDate: Date;
-    onDateChange: (newDate: Date) => void;
     activeAbsences: Record<AbsenceType, boolean>;
+    onDateChange: (newDate: Date) => void;
     onAbsenceToggle: (type: AbsenceType) => void;
-    onShowIconClick: () => boolean;
-    onShowMonthClick: () => boolean;
+    onShowIconClick: (value: boolean) => void;
+    onShowMonthClick: (value: boolean) => void;
 }
 
 export const AbsenceFilter: React.FC<AbsenceFilterProps> = ({
     selectedDate,
-    onDateChange,
     activeAbsences,
+    onDateChange,
     onAbsenceToggle,
     onShowIconClick,
     onShowMonthClick
 }) => {
-    const [showIcons, setShowIcons] = React.useState(false);
-    const [showMonth, setShowMonth] = React.useState(false);
+    const [isShowIcons, setIsShowIcons] = React.useState(false);
+    const [isShowMonth, setIsShowMonth] = React.useState(false);
 
     const absenceButtons = [
         { type: AbsenceType.vacation, label: 'Отпуск' },
@@ -85,10 +85,10 @@ export const AbsenceFilter: React.FC<AbsenceFilterProps> = ({
 
                     <Stack direction="column" spacing={1} alignItems="center">
                         <AbsenceSwitcher
-                            checked={showIcons}
+                            checked={isShowIcons}
                             onChange={(value) => {
-                                setShowIcons(value); // локальное обновление для визуала
-                                onShowIconClick();    // вызываем функцию из props
+                                setIsShowIcons(value); 
+                                onShowIconClick(value); 
                             }}
                             iconOn={Image}
                             iconOff={Edit}
@@ -96,10 +96,10 @@ export const AbsenceFilter: React.FC<AbsenceFilterProps> = ({
                             tooltipOff="Показать текст"
                         />
                         <AbsenceSwitcher
-                            checked={showMonth}
+                            checked={isShowMonth}
                             onChange={(value) => {
-                                setShowMonth(value);
-                                onShowMonthClick();  // вызываем функцию из props
+                                setIsShowMonth(value);
+                                onShowMonthClick(value); 
                             }}
                             iconOn={MonthIcon}
                             iconOff={WeekIcon}
