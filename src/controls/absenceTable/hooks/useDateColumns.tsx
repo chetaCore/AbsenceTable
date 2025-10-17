@@ -58,23 +58,26 @@ export function useDateColumns({
         resizable: false,
         renderHeader: () => {
           const weekday = day.toLocaleDateString('ru-RU', { weekday: 'short' });
+          const month = day.toLocaleDateString('ru-RU', { month: 'short' });
           return (
             <Box
               sx={{
                 display: 'flex',
-                flexDirection: 'column',
+                flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                lineHeight: 1.2,
-                textTransform: 'capitalize',
-                whiteSpace: 'pre-line',
+                gap: 0.5,
                 px: 0.5,
                 py: 0.5,
+                textTransform: 'capitalize',
                 transition: 'width 0.3s ease-in-out',
+                fontSize: '0.85rem',
+                whiteSpace: 'nowrap',
               }}
             >
-              <span>{weekday}</span>
+              <span>{weekday},</span>
               <span>{day.getDate()}</span>
+              <span>{month}</span>
             </Box>
           );
         },
