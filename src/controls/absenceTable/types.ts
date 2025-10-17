@@ -29,3 +29,8 @@ export interface AsencesInfo
     color: string;
     type: AbsenceType;
 }
+
+export interface Period {
+  startDate: Date;
+  endDate: Date;
+}

@@ -63,7 +63,7 @@ export const AbsenceCapsule: React.FC<AbsenceCapsuleProps> = ({
             left: 0,
             right: 0,
             bottom: 6,
-            bgcolor: 'rgba(0,0,0,0.05)',
+            bgcolor: 'rgba(0, 123, 255, 0.08)',
             borderRadius: 1,
             zIndex: 0,
           }}
@@ -159,6 +159,7 @@ export const AbsenceCapsule: React.FC<AbsenceCapsuleProps> = ({
       <Box
         sx={{
           position: 'absolute',
+          bgcolor: isToday ? 'rgba(0, 123, 255, 0.08)' : 'transparent',
           bottom: 0,
           left: 0,
           right: 0,

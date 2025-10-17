@@ -8,17 +8,30 @@ import { buildEmployeeRows } from './tools/buildEmployeeRows';
 import { useDateColumns } from './hooks/useDateColumns';
 import { GRID_RU_LOCALE_TEXT } from './gridLocale.ru';
 import { getTheme } from './tools/tableStyle';
-import { DataGrid, GridToolbarProps } from '@mui/x-data-grid';
-import { AbsenceType } from './types';
-import { AbsenceFilter } from './components/AbsenceFilter';
+import { DataGrid } from '@mui/x-data-grid';
+import { AbsenceType, Period } from './types';
+import { AbsenceToolbar } from './components/AbsenceToolbar';
+import { startOfWeek, endOfWeek } from 'date-fns';
 
 const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api }) => {
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [isShowIcons, setIsShowIcons] = React.useState(false);
-  const [isShowMonth, setIsShowMonth] = React.useState(false);
-  const employeesData = useEmployees();
-  const employeeColumns = useEmployeeColumns({ width: 300, minWidth: 300, employeeCount: employeesData?.length });
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [period, setPeriod] = useState<Period>({
+    startDate: startOfWeek(new Date(), { weekStartsOn: 1 }),
+    endDate: endOfWeek(new Date(), { weekStartsOn: 1 }),
+  });
+  const [isShowIcons, setIsShowIcons] = useState(true);
+  const [filter, setFilter] = useState('');
+  const [isScaleX2, setIsScaleX2] = useState(false);
+
+  const employeesData = useEmployees(filter);
   const absences = useEmployeeAbsences();
+
+  const employeeColumns = useEmployeeColumns({
+    width: 300,
+    minWidth: 300,
+    employeeCount: employeesData?.length
+  });
+
   const [activeAbsences, setActiveAbsences] = useState<Record<AbsenceType, boolean>>({
     [AbsenceType.vacation]: true,
     [AbsenceType.sick]: true,
@@ -33,17 +46,15 @@ const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api }) => {
     .map(([type]) => Number(type) as AbsenceType);
 
   const weekDaysColumns = useDateColumns({
-    width: 50,
-    minWidth: 60,
-    date: selectedDate,
+    width: isScaleX2 ? 200 : 100,
+    minWidth: isScaleX2 ? 240 : 120,
     excludeTypes: activeExcludeTypes,
-    period: isShowMonth ? 'Month' : 'Week',
+    period: period,
     isShowIcons
   });
 
-
   const allColumns = [...employeeColumns, ...weekDaysColumns];
-  const rows = buildEmployeeRows(employeesData.map(e => e.employee), selectedDate, absences);
+  const rows = buildEmployeeRows(employeesData.map(e => e.employee), period, absences);
 
   const handleAbsenceToggle = (type: AbsenceType) => {
     setActiveAbsences((prev) => ({
@@ -53,22 +64,26 @@ const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api }) => {
   };
 
   return (
-    <ThemeProvider theme={getTheme('light')}>
+    <ThemeProvider theme={getTheme(theme)}>
       <Box
         borderRadius="10px"
-        sx={{
-          width: '80%',
-          height: '100%',
-          border: '2px solid',
-        }}
+        minWidth={1750}
+        width='80%'
+        height='100%'
+        border='2px solid'
       >
-        <AbsenceFilter
-          selectedDate={selectedDate}
+
+        <AbsenceToolbar
           activeAbsences={activeAbsences}
-          onDateChange={setSelectedDate}
+          filter={filter}
+          period={period}
+          theme={theme}
           onAbsenceToggle={handleAbsenceToggle}
           onShowIconClick={setIsShowIcons}
-          onShowMonthClick={setIsShowMonth}
+          onFilterValueChange={setFilter}
+          onPeriodChange={setPeriod}
+          onThemeChanged={(value) => setTheme(value ? 'dark' : 'light')}
+          onScaleChanged={setIsScaleX2}
         />
 
         <DataGrid
@@ -80,7 +95,6 @@ const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api }) => {
           showColumnVerticalBorder
           getRowHeight={() => 60}
           localeText={GRID_RU_LOCALE_TEXT}
-          showToolbar
           sx={{
             maxHeight: 60 * 10,
             '& .MuiDataGrid-virtualScroller': {
@@ -92,6 +106,5 @@ const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api }) => {
     </ThemeProvider>
   );
 };
-
 
 export default AbsenceTable;

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Employee } from '../types';
 
-export function useEmployees() {
+export function useEmployees(filter: string = '') {
   const rows = useMemo(() => {
     const departments = [
       'Отдел разработки',
@@ -27,13 +27,13 @@ export function useEmployees() {
     const employeeStub = Array.from({ length: 100 }, (_, i) => {
       const name = names[i % names.length];
       const department = departments[i % departments.length];
-      const avatarId = (i % 70) + 1; // разные лица до 70
+      const avatarId = (i % 70) + 1;
 
       const employee: Employee = {
         id: i + 1,
         name,
         icon: `https://i.pravatar.cc/150?img=${avatarId}`,
-        department: department,
+        department,
         uri: `https://company.example.com/employees/${i + 1}`,
       };
 
@@ -43,8 +43,14 @@ export function useEmployees() {
       };
     });
 
-    return employeeStub;
-  }, []);
+    const lowerFilter = filter.trim().toLowerCase();
+    if (!lowerFilter) return employeeStub;
+
+    return employeeStub.filter(({ employee }) =>
+      employee.name.toLowerCase().includes(lowerFilter) ||
+      (employee.department?.toLowerCase() ?? '').includes(lowerFilter)
+    );
+  }, [filter]);
 
   return rows;
 }

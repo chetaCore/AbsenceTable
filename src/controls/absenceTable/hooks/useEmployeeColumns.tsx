@@ -15,28 +15,6 @@ export function useEmployeeColumns({
   employeeCount,
 }: useEmployeeColumnsProps): GridColDef[] {
 
-  const customFilterOperators: GridFilterOperator[] = [
-    {
-      label: 'Содержит',
-      value: 'contains',
-      getApplyFilterFn: (filterItem) => {
-
-        console.log(filterItem);
-        if (!filterItem.value) return null;
-        const filterValue = filterItem.value.toLowerCase();
-        return (params) => {
-          const employee = params.value;
-          if (!employee) return false;
-
-          const nameMatch = employee.name?.toLowerCase().includes(filterValue);
-          const departmentMatch = employee.department?.toLowerCase().includes(filterValue);
-
-          return nameMatch || departmentMatch; // ищем и по имени, и по подразделению
-        };
-      },
-    },
-  ];
-
   const columns = useMemo<GridColDef[]>(() => [
     {
       headerName: `Сотрудники (${employeeCount})`,
@@ -47,6 +25,7 @@ export function useEmployeeColumns({
       align: 'center',
       cellClassName: 'stickyColumn',
       headerClassName: 'stickyColumnHeader',
+      disableColumnMenu: true,
       renderCell: (params) => {
         if (!params.value) return null;
         return <EmployeeCard employee={params.value} />;
@@ -56,7 +35,6 @@ export function useEmployeeColumns({
         const nameB = b?.name?.toLowerCase() || '';
         return nameA.localeCompare(nameB);
       },
-      filterOperators: customFilterOperators,
     },
   ], [width, minWidth, employeeCount]);
 
