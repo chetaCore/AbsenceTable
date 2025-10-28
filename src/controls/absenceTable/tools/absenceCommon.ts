@@ -1,10 +1,11 @@
-import { AbsenceType } from "../types";
+import { AbsenceType } from "../api/types/types";
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import BeachAccessIcon from '@mui/icons-material/BeachAccess';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import { isPlainObject, camelCase } from "lodash";
 
 export function getMonday(date: Date) {
   const d = new Date(date);
@@ -21,17 +22,17 @@ export function stripTime(date: Date): Date {
 
 export function getColor(type: AbsenceType): string {
   switch (type) {
-    case AbsenceType.vacation:
+    case AbsenceType.Vacation:
       return '#1976d2';       // Синий
-    case AbsenceType.sick:
+    case AbsenceType.SickLeave:
       return '#d32f2f';       // Красный
-    case AbsenceType.businessTrip:
+    case AbsenceType.JobDeparture:
       return '#ed6c02';       // Оранжевый
-    case AbsenceType.halfDay:
+    case AbsenceType.LeaveOfAbs4h:
       return '#9c27b0';       // Фиолетовый
-    case AbsenceType.remoteWork:
+    case AbsenceType.RemoteWork:
       return '#2e7d32';       // Зелёный
-    case AbsenceType.businessTripOut:
+    case AbsenceType.BusinessTripOut:
       return '#0288d1';       // Голубой
     default:
       return '#999';
@@ -40,18 +41,18 @@ export function getColor(type: AbsenceType): string {
 
 export function getIcon(type: AbsenceType): any {
   switch (type) {
-    case AbsenceType.vacation:
+    case AbsenceType.Vacation:
       return  BeachAccessIcon ;
-    case AbsenceType.sick:
+    case AbsenceType.SickLeave:
       return MedicalServicesIcon;
-    case AbsenceType.businessTrip:
+    case AbsenceType.JobDeparture:
       return FlightTakeoffIcon;
-    case AbsenceType.halfDay:
-      return AccessTimeIcon;      // значок часов
-    case AbsenceType.remoteWork:
-      return HomeWorkIcon;        // домашний офис
-    case AbsenceType.businessTripOut:
-      return DirectionsCarIcon;   // машина / выезд
+    case AbsenceType.LeaveOfAbs4h:
+      return AccessTimeIcon;
+    case AbsenceType.RemoteWork:
+      return HomeWorkIcon;
+    case AbsenceType.BusinessTripOut:
+      return DirectionsCarIcon;
     default:
       return null;
   }
@@ -59,17 +60,17 @@ export function getIcon(type: AbsenceType): any {
 
 export function getAbsenceTypeName(type: AbsenceType): string {
   switch (type) {
-    case AbsenceType.vacation:
+    case AbsenceType.Vacation:
       return "Отпуск";
-    case AbsenceType.sick:
+    case AbsenceType.SickLeave:
       return "Больничный";
-    case AbsenceType.businessTrip:
+    case AbsenceType.JobDeparture:
       return "Командировка";
-    case AbsenceType.halfDay:
+    case AbsenceType.LeaveOfAbs4h:
       return "Отгул (менее 4 часов)";
-    case AbsenceType.remoteWork:
+    case AbsenceType.RemoteWork:
       return "Удалённая работа";
-    case AbsenceType.businessTripOut:
+    case AbsenceType.BusinessTripOut:
       return "Выезд по работе";
     default:
       return "Неизвестно";

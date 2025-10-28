@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { GridColDef, GridFilterOperator } from '@mui/x-data-grid';
 import { EmployeeCard } from '../components/EmployeeCard';
-import { Employee } from '../types';
+import { Employee } from '../api/types/types';
 
 interface useEmployeeColumnsProps {
   width: number;

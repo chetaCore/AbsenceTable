@@ -1,14 +1,14 @@
 import React from 'react';
 import { GridColDef } from "@mui/x-data-grid";
 import { Box } from '@mui/material';
-import { AbsenceType, EmployeeAbsence, Period } from '../types';
+import { AbsenceType, EmployeeAbsence, Period } from '../api/types/types';
 import { stripTime } from '../tools/absenceCommon';
 import { AbsenceCapsule } from '../components/AbsenceCapsule';
 
 interface UseDateColumnsProps {
   width: number;
   minWidth: number;
-  excludeTypes?: AbsenceType[];
+  absencesTypesState?: Record<AbsenceType, boolean>;
   period: Period;
   isShowIcons: boolean;
 }
@@ -16,10 +16,18 @@ interface UseDateColumnsProps {
 export function useDateColumns({
   width,
   minWidth,
-  excludeTypes = [],
+  absencesTypesState,
   period,
   isShowIcons
 }: UseDateColumnsProps): GridColDef[] {
+
+  // Проверка на валидность absencesTypesState
+  const isAbsencesTypesValid = (state?: Record<AbsenceType, boolean>) => {
+    if (!state) return false;
+
+    // Проверяем, что все типы AbsenceType присутствуют в объекте
+    return Object.keys(AbsenceType).every((key) => key in state);
+  };
 
   const dates = React.useMemo(() => {
     const { startDate, endDate } = period;
@@ -73,6 +81,8 @@ export function useDateColumns({
                 transition: 'width 0.3s ease-in-out',
                 fontSize: '0.85rem',
                 whiteSpace: 'nowrap',
+                color: isToday ? 'red' : 'inherit',
+                fontWeight: isToday ? 600 : 400,
               }}
             >
               <span>{weekday},</span>
@@ -83,7 +93,7 @@ export function useDateColumns({
         },
         renderCell: (params) => {
           const absences = (params.value as EmployeeAbsence[] || []).filter(
-            (a) => !excludeTypes.includes(a.type)
+            (a) => !absencesTypesState || absencesTypesState[a.type]
           );
 
           if (absences.length === 0) {
@@ -111,7 +121,7 @@ export function useDateColumns({
         },
       };
     });
-  }, [dates, width, minWidth, excludeTypes, isShowIcons, today]);
+  }, [dates, width, minWidth, absencesTypesState, isShowIcons, today]);
 
   return columns;
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Tooltip, Typography } from '@mui/material';
-import { AbsenceType, EmployeeAbsence } from '../types';
+import { AbsenceType, EmployeeAbsence } from '../api/types/types';
 import { getAbsenceTypeName, getColor, getIcon } from '../tools/absenceCommon';
 
 interface AbsenceCapsuleProps {
@@ -91,13 +91,18 @@ export const AbsenceCapsule: React.FC<AbsenceCapsuleProps> = ({
 
             const tooltipTitle = (
               <Box sx={{ p: 1 }}>
-                <b>{getAbsenceTypeName(type as AbsenceType)}</b>
-                <br />
-                {startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} —{' '}
-                {endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                <Typography variant="body2" component="div">
+                  <b>{getAbsenceTypeName(type as AbsenceType)}</b>
+                </Typography>
+                <Typography variant="body2" component="div">
+                  {startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} —{' '}
+                  {endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Typography>
+                <Typography variant="body2" component="div">
+                  {`Часы: ${(endHour - startHour).toFixed(2)}`}
+                </Typography>
               </Box>
             );
-
 
             return (
               <Tooltip key={`${dayKey}-${i}-${layerIndex}`} title={tooltipTitle} arrow>

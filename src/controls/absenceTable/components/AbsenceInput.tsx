@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { getColor } from '../tools/absenceCommon';
-import { AbsenceType } from '../types';
+import { AbsenceType } from '../api/types/types';
 
 interface AbsenceInputProps {
   type: AbsenceType;

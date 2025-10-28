@@ -52,12 +52,35 @@ export const getTheme = (mode: PaletteMode) => {
           root: {
             '& .MuiOutlinedInput-root': {
               borderRadius: '16px',
-              bgcolor: '#f0f0f0',
+              bgcolor: mode === 'light' ? '#f0f0f0' : '#475569',
               padding: '0 8px',
-              '&:hover': { bgcolor: '#e0e0e0' },
-              '&.Mui-focused': { bgcolor: '#d0d0d0' },
+              '&:hover': { bgcolor: mode === 'light' ? '#e0e0e0' : '#334155' },
+              '&.Mui-focused': { bgcolor: mode === 'light' ? '#d0d0d0' : '#1e293b' },
             },
             '& input': { padding: '8px 12px' },
+          },
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            textTransform: 'none',
+            borderRadius: 8,
+            '&.MuiButton-outlined': {
+              borderColor: mode === 'light' ? '#ccc' : '#475569',
+              color: mode === 'light' ? '#000' : '#f8fafc',
+              '&:hover': {
+                borderColor: mode === 'light' ? '#999' : '#64748b',
+                backgroundColor: mode === 'light' ? '#e0e0e0' : '#1e293b',
+              },
+            },
+          },
+        },
+      },
+      MuiDivider: {
+        styleOverrides: {
+          root: {
+            backgroundColor: mode === 'light' ? '#ccc' : '#64748b',
           },
         },
       },
@@ -77,7 +100,7 @@ export const getTheme = (mode: PaletteMode) => {
               color: '#fff',
               '&:hover': { bgcolor: '#4338ca' },
             },
-            '&:hover': { bgcolor: '#e0e0e0' },
+            '&:hover': { bgcolor: mode === 'light' ? '#e0e0e0' : '#1e293b' },
           },
         },
       },
@@ -102,17 +125,17 @@ export const getTheme = (mode: PaletteMode) => {
         styleOverrides: {
           root: {
             borderRadius: '16px',
-            bgcolor: '#f0f0f0',
+            bgcolor: mode === 'light' ? '#f0f0f0' : '#475569',
             padding: '4px 12px',
             minHeight: 36,
             display: 'flex',
             alignItems: 'center',
             gap: 4,
             '&:hover': {
-              bgcolor: '#e0e0e0',
+              bgcolor: mode === 'light' ? '#e0e0e0' : '#334155',
             },
             '&.Mui-focused': {
-              bgcolor: '#d0d0d0',
+              bgcolor: mode === 'light' ? '#d0d0d0' : '#1e293b',
             },
           },
         },
@@ -120,7 +143,7 @@ export const getTheme = (mode: PaletteMode) => {
       MuiPickersSection: {
         styleOverrides: {
           root: {
-            color: '#000',
+            color: mode === 'light' ? '#000' : '#f8fafc',
             fontWeight: 500,
           },
         },
@@ -129,6 +152,13 @@ export const getTheme = (mode: PaletteMode) => {
         styleOverrides: {
           root: {
             padding: '4px 6px',
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            backgroundColor: mode === 'light' ? '#f8fafc' : '#334155',
           },
         },
       },

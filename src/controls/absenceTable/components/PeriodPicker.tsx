@@ -1,11 +1,11 @@
 import React from 'react';
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { CalendarMonth } from '@mui/icons-material';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ru } from 'date-fns/locale';
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { Period } from '../types';
+import { startOfWeek, endOfWeek, addDays, subDays } from 'date-fns';
+import { Period } from '../api/types/types';
 
 interface PeriodPickerProps {
   period: Period;
@@ -18,39 +18,19 @@ export const PeriodPicker: React.FC<PeriodPickerProps> = ({
 }) => {
   const { startDate, endDate } = period;
 
-  const monthStart = startOfMonth(new Date());
-  const monthEnd = endOfMonth(new Date());
+  // Границы: 31 день назад и 31 день вперёд от текущей даты
+  const today = new Date();
+  const rangeStart = subDays(today, 31);
+  const rangeEnd = addDays(today, 31);
 
   const handleThisWeek = () => {
-    const start = startOfWeek(new Date(), { weekStartsOn: 1 });
-    const end = endOfWeek(new Date(), { weekStartsOn: 1 });
+    const start = startOfWeek(today, { weekStartsOn: 1 });
+    const end = endOfWeek(today, { weekStartsOn: 1 });
 
-    const safeStart = start < monthStart ? monthStart : start;
-    const safeEnd = end > monthEnd ? monthEnd : end;
+    const safeStart = start < rangeStart ? rangeStart : start;
+    const safeEnd = end > rangeEnd ? rangeEnd : end;
 
     onPeriodChange({ startDate: safeStart, endDate: safeEnd });
-  };
-
-  const pickerStyle = {
-    bgcolor: '#f0f0f0',
-    borderRadius: '16px',
-    px: 2,
-    py: 0.5,
-    minHeight: 36,
-    width: 300,
-    textTransform: 'none',
-    '& .MuiSvgIcon-root': {
-      fontSize: 20,
-      color: '#000',
-    },
-    '&:hover': {
-      bgcolor: '#e0e0e0',
-    },
-    '&.Mui-focused': {
-      bgcolor: '#1976d2',
-      color: '#fff',
-      '& .MuiSvgIcon-root': { color: '#fff' },
-    },
   };
 
   return (
@@ -71,8 +51,8 @@ export const PeriodPicker: React.FC<PeriodPickerProps> = ({
         <DatePicker
           label="Начало периода"
           value={startDate}
-          minDate={monthStart}
-          maxDate={endDate > monthEnd ? monthEnd : endDate}
+          minDate={rangeStart}
+          maxDate={endDate > rangeEnd ? rangeEnd : endDate}
           onChange={(date) => {
             if (!date) return;
             const newStart = date > endDate ? endDate : date;
@@ -91,8 +71,8 @@ export const PeriodPicker: React.FC<PeriodPickerProps> = ({
         <DatePicker
           label="Конец периода"
           value={endDate}
-          minDate={startDate < monthStart ? monthStart : startDate}
-          maxDate={monthEnd}
+          minDate={startDate < rangeStart ? rangeStart : startDate}
+          maxDate={rangeEnd}
           onChange={(date) => {
             if (!date) return;
             const newEnd = date < startDate ? startDate : date;

@@ -1,13 +1,13 @@
-import { Employee, EmployeeAbsence } from '../types';
+import { Employee, EmployeeAbsence } from '../api/types/types';
 
 export function buildEmployeeRows(
   employees: Employee[],
   period: { startDate: Date; endDate: Date },
-  absences: EmployeeAbsence[]
+  absences: EmployeeAbsence[],
+  isShowEmptyEmployees: boolean 
 ) {
   const { startDate, endDate } = period;
 
-  // Генерируем все даты в периоде
   const dates: Date[] = [];
   let current = new Date(startDate);
   while (current <= endDate) {
@@ -15,26 +15,34 @@ export function buildEmployeeRows(
     current.setDate(current.getDate() + 1);
   }
 
-  return employees.map(emp => {
-    const row: any = { 
-      id: emp.id, 
-      employee: emp,
-      name: emp.name || '',
-      department: emp.department || '',
-    };
+  return employees
+    .map(emp => {
+      const row: any = { 
+        id: emp.id, 
+        employee: emp,
+        name: emp.name || '',
+        department: emp.department || '',
+      };
 
-    for (const date of dates) {
-      const todaysAbsences = absences.filter(a =>
-        a.employeeId === emp.id &&
-        stripTime(date) >= stripTime(new Date(a.startDate)) &&
-        stripTime(date) <= stripTime(new Date(a.endDate))
-      );
+      let hasAnyAbsence = false;
 
-      row[`${date.getDate()}`] = todaysAbsences.length > 0 ? todaysAbsences : null;
-    }
+      for (const date of dates) {
+        const todaysAbsences = absences.filter(a =>
+          a.employeeId === emp.id &&
+          stripTime(date) >= stripTime(new Date(a.startDate)) &&
+          stripTime(date) <= stripTime(new Date(a.endDate))
+        );
 
-    return row;
-  });
+        if (todaysAbsences.length > 0) hasAnyAbsence = true;
+
+        row[`${date.getDate()}`] = todaysAbsences.length > 0 ? todaysAbsences : null;
+      }
+
+      if (!isShowEmptyEmployees && !hasAnyAbsence) return null;
+
+      return row;
+    })
+    .filter(Boolean);
 }
 
 function stripTime(date: Date): Date {

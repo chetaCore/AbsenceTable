@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { CalendarMonth, Edit, Image } from '@mui/icons-material';
+import { CalendarMonth, Edit, Image, PeopleAlt, PersonOff } from '@mui/icons-material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ru } from 'date-fns/locale';
 import { ButtonGroup, Stack, Box, Divider } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AbsenceType, Period } from '../types';
+import { AbsenceType, Period } from '../api/types/types';
 import { AbsenceButton } from './AbsenceButton';
 import { AbsenceSwitcher } from './AbsenceSwitcher';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
@@ -13,74 +13,88 @@ import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
 import ZoomInMapIcon from '@mui/icons-material/ZoomInMap';
 import { AbsenceInput } from './AbsenceInput';
 import { PeriodPicker } from './PeriodPicker';
+import { getAbsenceTypeName } from '../tools/absenceCommon';
 
 interface AbsenceToolbarProps {
-    activeAbsences: Record<AbsenceType, boolean>;
+    absencesTypesState: Record<AbsenceType, boolean>;
     filter: string;
     period: Period;
     theme: 'dark' | 'light';
-    onAbsenceToggle: (type: AbsenceType) => void;
+    isShowEmptyEmployees: boolean;
+    isShowIcons: boolean;
+    isWideColumns: boolean;
+    onAbsencesTypesStateToggle: (newAbsences: Record<AbsenceType, boolean>) => void;
     onShowIconClick: (value: boolean) => void;
     onFilterValueChange: (value: string) => void;
     onPeriodChange: (period: Period) => void;
     onThemeChanged: (value: boolean) => void;
-    onScaleChanged: (value: boolean) => void; // 👈 новый обработчик
+    onScaleChanged: (value: boolean) => void;
+    onShowEmptyEmployeesChanged: (value: boolean) => void;
 }
 
 export const AbsenceToolbar: React.FC<AbsenceToolbarProps> = ({
-    activeAbsences,
+    absencesTypesState: activeAbsences,
     filter,
     period,
     theme,
-    onAbsenceToggle,
+    isShowIcons,
+    isWideColumns,
+    isShowEmptyEmployees,
+    onAbsencesTypesStateToggle: onAbsenceToggle,
     onShowIconClick,
     onFilterValueChange,
     onPeriodChange,
     onThemeChanged,
-    onScaleChanged
+    onScaleChanged,
+    onShowEmptyEmployeesChanged
 }) => {
-    const [isShowIcons, setIsShowIcons] = useState(true);
-    const [isWideColumns, setIsWideColumns] = useState(false); // 👈 состояние масштаба столбцов
 
-    const absenceButtons = [
-        { type: AbsenceType.vacation, label: 'Отпуск' },
-        { type: AbsenceType.sick, label: 'Больничный' },
-        { type: AbsenceType.businessTrip, label: 'Командировка' },
-        { type: AbsenceType.halfDay, label: 'Отгул < 4ч' },
-        { type: AbsenceType.remoteWork, label: 'Удалёнка' },
-        { type: AbsenceType.businessTripOut, label: 'Выезд по работе' },
-    ];
+    const absenceButtons = Object.values(AbsenceType).map((type) => ({
+      type,
+      label: getAbsenceTypeName(type),
+    }));
 
     const chunkedButtons: typeof absenceButtons[] = [];
     for (let i = 0; i < absenceButtons.length; i += 3) {
         chunkedButtons.push(absenceButtons.slice(i, i + 3));
     }
 
+    const handleAbsenceToggle = (type: AbsenceType) => {
+        const updatedAbsences = {
+            ...activeAbsences,
+            [type]: !activeAbsences[type],
+        };
+        onAbsenceToggle(updatedAbsences);
+    };
+
     return (
         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ru}>
-            <Box sx={{ p: 1, m: 1 }}>
+            <Box p={1} m={1}>
                 <Stack spacing={2}>
                     {/* Верхний ряд: кнопки, переключатели, DatePicker */}
-                    <Stack direction="row" spacing={2} alignItems="center">
+                    <Stack
+                        direction="row"
+                        spacing={2}
+                        alignItems="center"
+                        justifyContent="flex-start"
+                        flexWrap="nowrap"
+                        sx={{ overflowX: 'auto' }}
+                    >
+
                         {/* Кнопки отсутствий */}
-                        <Stack spacing={2} sx={{ flex: 1 }}>
+                        <Stack spacing={2} flex={1}>
                             {chunkedButtons.map((row, index) => (
                                 <ButtonGroup
                                     key={index}
                                     variant="outlined"
                                     fullWidth
-                                    sx={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        '& .MuiButton-root': { flex: 1, textTransform: 'none' },
-                                    }}
                                 >
                                     {row.map(({ type, label }) => (
                                         <AbsenceButton
                                             key={type}
                                             type={type}
                                             active={activeAbsences[type]}
-                                            onClick={() => onAbsenceToggle(type)}
+                                            onClick={() => handleAbsenceToggle(type)} // Переключаем состояние по клику
                                         >
                                             {label}
                                         </AbsenceButton>
@@ -89,7 +103,7 @@ export const AbsenceToolbar: React.FC<AbsenceToolbarProps> = ({
                             ))}
                         </Stack>
 
-                        <Divider orientation="vertical" flexItem sx={{ bgcolor: '#ccc' }} />
+                        <Divider orientation="vertical" flexItem />
 
                         {/* Переключатели */}
                         <Stack direction="column" spacing={1} alignItems="center">
@@ -97,7 +111,6 @@ export const AbsenceToolbar: React.FC<AbsenceToolbarProps> = ({
                             <AbsenceSwitcher
                                 checked={isShowIcons}
                                 onChange={(value) => {
-                                    setIsShowIcons(value);
                                     onShowIconClick(value);
                                 }}
                                 iconOn={Image}
@@ -116,11 +129,11 @@ export const AbsenceToolbar: React.FC<AbsenceToolbarProps> = ({
                                 tooltipOff="Светлая тема"
                             />
 
-                            {/* 👇 Новый свитчер масштаба ширины столбцов */}
+                            {/* Масштаб столбцов */}
                             <AbsenceSwitcher
                                 checked={isWideColumns}
                                 onChange={(value) => {
-                                    setIsWideColumns(value);
+                                    console.log(value);
                                     onScaleChanged(value);
                                 }}
                                 iconOn={ZoomOutMapIcon}
@@ -128,9 +141,21 @@ export const AbsenceToolbar: React.FC<AbsenceToolbarProps> = ({
                                 tooltipOn="Масштаб столбцов x2"
                                 tooltipOff="Масштаб столбцов x1"
                             />
+
+                            {/* Показ сотрудников без отсутствий */}
+                            <AbsenceSwitcher
+                                checked={isShowEmptyEmployees}
+                                onChange={(value) => {
+                                    onShowEmptyEmployeesChanged(value);
+                                }}
+                                iconOn={PeopleAlt}
+                                iconOff={PersonOff}
+                                tooltipOn="Показать всех сотрудников"
+                                tooltipOff="Скрыть сотрудников без отсутствий"
+                            />
                         </Stack>
 
-                        <Divider orientation="vertical" flexItem sx={{ bgcolor: '#ccc' }} />
+                        <Divider orientation="vertical" flexItem />
 
                         {/* DatePicker */}
                         <Stack direction="row" spacing={1} alignItems="center">
@@ -138,14 +163,14 @@ export const AbsenceToolbar: React.FC<AbsenceToolbarProps> = ({
                         </Stack>
                     </Stack>
 
-                    <Divider sx={{ bgcolor: '#ccc' }} />
+                    <Divider />
 
                     {/* Фильтр */}
                     <Stack direction="row" spacing={1} alignItems="center">
                         <AbsenceInput
-                            type={AbsenceType.businessTrip}
+                            type={AbsenceType.JobDeparture}
                             value={filter}
-                            onChange={(value) => onFilterValueChange(value)}
+                            onChange={onFilterValueChange}
                             placeholder="Имя или подразделение"
                             active={!!filter}
                         />

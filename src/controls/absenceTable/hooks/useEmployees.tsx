@@ -1,56 +1,61 @@
-import React, { useMemo } from 'react';
-import { Employee } from '../types';
+import { useEffect } from 'react';
+import { Employee } from '../api/types/types';
+import { getEmployees } from '../api/odata';
 
-export function useEmployees(filter: string = '') {
-  const rows = useMemo(() => {
-    const departments = [
-      'Отдел разработки',
-      'Отдел продаж',
-      'HR',
-      'Бухгалтерия',
-      'Маркетинг',
-    ];
+interface UseEmployeesProps {
+  filter?: string;
+  onEmployeesChange?: (employees: Employee[]) => void;
+  onLoadingChange?: (loading: boolean) => void;
+  onError?: (error: string) => void;
+}
 
-    const names = [
-      'Иван Иванов',
-      'Петр Петров',
-      'Сергей Смирнов',
-      'Анна Кузнецова',
-      'Мария Волкова',
-      'Алексей Федоров',
-      'Дарья Попова',
-      'Никита Морозов',
-      'Ольга Павлова',
-      'Кирилл Козлов',
-    ];
+export function useEmployees({
+  filter = '',
+  onLoadingChange,
+  onError,
+  onEmployeesChange,
+}: UseEmployeesProps = {}) {
+  useEffect(() => {
+    let cancelled = false;
 
-    const employeeStub = Array.from({ length: 100 }, (_, i) => {
-      const name = names[i % names.length];
-      const department = departments[i % departments.length];
-      const avatarId = (i % 70) + 1;
+    const loadEmployees = async () => {
+      try {
+        onLoadingChange?.(true);
 
-      const employee: Employee = {
-        id: i + 1,
-        name,
-        icon: `https://i.pravatar.cc/150?img=${avatarId}`,
-        department,
-        uri: `https://company.example.com/employees/${i + 1}`,
-      };
+        const result = await getEmployees();
+        if (!result.success || !result.data) {
+          throw new Error(result.error ?? 'Ошибка загрузки сотрудников');
+        }
 
-      return {
-        id: i + 1,
-        employee,
-      };
-    });
+        const employees = result.data;
 
-    const lowerFilter = filter.trim().toLowerCase();
-    if (!lowerFilter) return employeeStub;
+        const lower = filter.trim().toLowerCase();
+        const filtered = !lower
+          ? employees
+          : employees.filter(
+              (e) =>
+                e.name.toLowerCase().includes(lower) ||
+                e.department?.name.toLowerCase().includes(lower)
+            );
 
-    return employeeStub.filter(({ employee }) =>
-      employee.name.toLowerCase().includes(lowerFilter) ||
-      (employee.department?.toLowerCase() ?? '').includes(lowerFilter)
-    );
-  }, [filter]);
+        if (!cancelled) {
+          onEmployeesChange?.(filtered);
+        }
+      } catch (error: any) {
+        if (!cancelled) {
+          onError?.(error.message || 'Неизвестная ошибка');
+        }
+      } finally {
+        if (!cancelled) {
+          onLoadingChange?.(false);
+        }
+      }
+    };
 
-  return rows;
+    loadEmployees();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filter, onLoadingChange, onError, onEmployeesChange]);
 }

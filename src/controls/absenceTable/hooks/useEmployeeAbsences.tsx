@@ -1,83 +1,68 @@
-import { useMemo } from "react";
-import { AbsenceType } from "../types";
+import { useEffect, useState } from "react";
+import { AbsenceType, Employee, EmployeeAbsence, Period } from "../api/types/types";
+import { AbsenceTableDTO, AbsenceTableResponseDTO } from "../api/dto";
+import { getAbsenceTableData } from "../api/odata";
 
-export interface EmployeeAbsence {
-  employeeId: number;
-  type: AbsenceType;
-  startDate: Date;
-  endDate: Date;
-  startWorkHour: number;
-  endWorkHour: number;
+interface UseEmployeeAbsencesProps {
+  employees: Employee[];
+  period: Period;
+  onAbsencesChange?: (employees: EmployeeAbsence[]) => void;
+  onLoadingChange?: (loading: boolean) => void;
+  onError?: (error: string) => void;
 }
 
-export function useEmployeeAbsences(): EmployeeAbsence[] {
-  const absences: EmployeeAbsence[] = useMemo(() => [
-    // Сотрудник 1 — работает с 8 до 17
-    {
-      employeeId: 1,
-      type: AbsenceType.vacation,
-      startDate: new Date("2025-10-14T08:00"),
-      endDate: new Date("2025-10-14T17:00"),
-      startWorkHour: 8,
-      endWorkHour: 17,
-    },
+export function useEmployeeAbsences({
+  employees,
+  period,
+  onAbsencesChange,
+  onLoadingChange,
+  onError,
+}: UseEmployeeAbsencesProps) {
 
-    // Сотрудник 2 — работает с 9 до 18
-    {
-      employeeId: 2,
-      type: AbsenceType.remoteWork,
-      startDate: new Date("2025-10-15T09:00"),
-      endDate: new Date("2025-10-15T18:00"),
-      startWorkHour: 9,
-      endWorkHour: 18,
-    },
+  useEffect(() => {
+    let isMounted = true; 
+    const { startDate, endDate } = period;
 
-    // Сотрудник 3 — работает с 7 до 16
-    {
-      employeeId: 3,
-      type: AbsenceType.sick,
-      startDate: new Date("2025-10-14T07:00"),
-      endDate: new Date("2025-10-16T16:00"),
-      startWorkHour: 7,
-      endWorkHour: 16,
-    },
+    const employeesIds = employees?.map(e => e.id) ?? [];
+    if (!employeesIds.length) {
+      onAbsencesChange?.([]);
+      return;
+    }
 
-    // Сотрудник 4 — работает с 10 до 19
-    {
-      employeeId: 4,
-      type: AbsenceType.businessTrip,
-      startDate: new Date("2025-10-16T10:00"),
-      endDate: new Date("2025-10-16T19:00"),
-      startWorkHour: 10,
-      endWorkHour: 19,
-    },
+    const absenceTableDTO: AbsenceTableDTO = { employeesIds, startPeriod: startDate, endPeriod: endDate };
 
-    // Сотрудник 5 — работает с 8 до 17, несколько видов отсутствий
-    {
-      employeeId: 5,
-      type: AbsenceType.remoteWork,
-      startDate: new Date("2025-10-14T08:00"),
-      endDate: new Date("2025-10-16T17:00"),
-      startWorkHour: 8,
-      endWorkHour: 17,
-    },
-    {
-      employeeId: 5,
-      type: AbsenceType.sick,
-      startDate: new Date("2025-10-14T08:00"),
-      endDate: new Date("2025-10-18T12:00"),
-      startWorkHour: 8,
-      endWorkHour: 17,
-    },
-     {
-      employeeId: 5,
-      type: AbsenceType.vacation,
-      startDate: new Date("2025-10-14T13:00"),
-      endDate: new Date("2025-10-16T16:00"),
-      startWorkHour: 8,
-      endWorkHour: 17,
-    },
-  ], []);
+    const fetchAbsences = async () => {
+      onLoadingChange?.(true);
 
-  return absences;
+      try {
+        const response = await getAbsenceTableData(absenceTableDTO);
+        if (!isMounted || !response.data) return;
+
+        const parsedData: AbsenceTableResponseDTO[] =
+          typeof response.data === "string" ? JSON.parse(response.data) : response.data;
+
+        const mapped: EmployeeAbsence[] = parsedData.map(a => ({
+          employeeId: a.employeeId,
+          type: a.type as unknown as AbsenceType,
+          startDate: new Date(a.startDate),
+          endDate: new Date(a.endDate),
+          startWorkHour: 8,
+          endWorkHour: 17,
+        }));
+
+        onAbsencesChange?.(mapped);
+      } catch (error) {
+        console.error("Failed to fetch absences:", error);
+        onError?.("Ошибка загрузки данных");
+      } finally {
+        onLoadingChange?.(false);
+      }
+    };
+
+    fetchAbsences();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [employees, period, onLoadingChange, onError, onAbsencesChange]);
 }

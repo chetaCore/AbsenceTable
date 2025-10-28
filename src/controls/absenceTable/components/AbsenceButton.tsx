@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from "@mui/material";
 import { getIcon, getColor } from "../tools/absenceCommon";
-import { AbsenceType } from "../types";
+import { AbsenceType } from "../api/types/types";
 
 interface AbsenceButtonProps {
   type: AbsenceType;
