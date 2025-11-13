@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from "@mui/material";
-import { getIcon, getColor } from "../tools/absenceCommon";
-import { AbsenceType } from "../api/types/types";
+import { getIcon, getColor } from "../../tools/absenceCommon";
+import { AbsenceType } from "../../api/types/types";
 
 interface AbsenceButtonProps {
   type: AbsenceType;
@@ -19,20 +19,11 @@ export const AbsenceButton: React.FC<AbsenceButtonProps> = ({ type, active = fal
       onClick={onClick}
       startIcon={IconComponent ? <IconComponent sx={{ fontSize: 20, color: active ? '#fff' : color }} /> : undefined}
       sx={{
-        bgcolor: active ? color : '#f0f0f0',
-        color: active ? '#fff' : '#000',
+        bgcolor: active ? color : undefined,
+        color: active ? '#fff' : undefined,
         '&:hover': {
-          bgcolor: active ? color : '#e0e0e0',
+          bgcolor: active ? color : undefined,
         },
-        borderRadius: '16px', 
-        textTransform: 'none',
-        px: 2,
-        py: 0.5, 
-        minHeight: 36,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1,
-        width: '300px',
       }}
     >
       {children}

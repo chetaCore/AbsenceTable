@@ -18,7 +18,6 @@ export const PeriodPicker: React.FC<PeriodPickerProps> = ({
 }) => {
   const { startDate, endDate } = period;
 
-  // Границы: 31 день назад и 31 день вперёд от текущей даты
   const today = new Date();
   const rangeStart = subDays(today, 31);
   const rangeEnd = addDays(today, 31);
@@ -56,7 +55,7 @@ export const PeriodPicker: React.FC<PeriodPickerProps> = ({
           onChange={(date) => {
             if (!date) return;
             const newStart = date > endDate ? endDate : date;
-            onPeriodChange({ startDate: newStart, endDate });
+            onPeriodChange({ startDate: newStart as Date, endDate });
           }}
           slots={{ openPickerIcon: CalendarMonth }}
           slotProps={{
@@ -76,7 +75,7 @@ export const PeriodPicker: React.FC<PeriodPickerProps> = ({
           onChange={(date) => {
             if (!date) return;
             const newEnd = date < startDate ? startDate : date;
-            onPeriodChange({ startDate, endDate: newEnd });
+            onPeriodChange({ startDate, endDate: newEnd as Date });
           }}
           slots={{ openPickerIcon: CalendarMonth }}
           slotProps={{

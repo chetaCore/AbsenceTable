@@ -1,9 +1,11 @@
 import React from 'react';
 import { GridColDef } from "@mui/x-data-grid";
 import { Box } from '@mui/material';
-import { AbsenceType, EmployeeAbsence, Period } from '../api/types/types';
-import { stripTime } from '../tools/absenceCommon';
-import { AbsenceCapsule } from '../components/AbsenceCapsule';
+import { AbsenceType, EmployeeAbsence, Period } from '../../api/types/types';
+import { getFieldKeyByDate, stripTime } from '../../tools/absenceCommon';
+import { AbsenceCapsule } from '../../components/AbsenceCapsule';
+import { ClickableEmptySlot } from '../../components/ClickableEmptySlot';
+import { CreateAbsenceDialog } from '../../components/dialogs/CreateAbsenceDialog';
 
 interface UseDateColumnsProps {
   width: number;
@@ -20,14 +22,6 @@ export function useDateColumns({
   period,
   isShowIcons
 }: UseDateColumnsProps): GridColDef[] {
-
-  // Проверка на валидность absencesTypesState
-  const isAbsencesTypesValid = (state?: Record<AbsenceType, boolean>) => {
-    if (!state) return false;
-
-    // Проверяем, что все типы AbsenceType присутствуют в объекте
-    return Object.keys(AbsenceType).every((key) => key in state);
-  };
 
   const dates = React.useMemo(() => {
     const { startDate, endDate } = period;
@@ -51,7 +45,7 @@ export function useDateColumns({
       const highlightBorder = '1px solid rgba(0, 123, 255, 0.3)';
 
       return {
-        field: `${day.getDate()}`,
+        field: `${getFieldKeyByDate(day)}`,
         headerName: `${day.getDate()}`,
         width,
         minWidth,
@@ -98,16 +92,9 @@ export function useDateColumns({
 
           if (absences.length === 0) {
             return (
-              <Box
-                sx={{
-                  width: '100%',
-                  height: '100%',
-                  bgcolor: isToday ? highlightBg : 'transparent',
-                  borderRadius: 1,
-                  border: isToday ? highlightBorder : 'none',
-                  transition: 'background-color 0.3s, border 0.3s, width 0.3s',
-                }}
-              />
+              <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
+                <ClickableEmptySlot onClick={() => console.log("Клик")} />
+              </Box>
             );
           }
 

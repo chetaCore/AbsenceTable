@@ -6,6 +6,19 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import { isPlainObject, camelCase } from "lodash";
+import { colors } from "@mui/material";
+
+
+/**
+ * Получить уникальный ключ поля для колонки по дате.
+ * Пример: 2025-10-30
+ */
+export function getFieldKeyByDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  return `${year}-${month}-${day}`;
+}
 
 export function getMonday(date: Date) {
   const d = new Date(date);
@@ -23,21 +36,22 @@ export function stripTime(date: Date): Date {
 export function getColor(type: AbsenceType): string {
   switch (type) {
     case AbsenceType.Vacation:
-      return '#1976d2';       // Синий
+      return '#FFB300';       // Ярко-желтый (Золотой) — для отпуска
     case AbsenceType.SickLeave:
-      return '#d32f2f';       // Красный
+      return '#D32F2F';       // Красный — для больничного
     case AbsenceType.JobDeparture:
-      return '#ed6c02';       // Оранжевый
+      return '#FF5722';       // Тёплый оранжевый — для увольнения
     case AbsenceType.LeaveOfAbs4h:
-      return '#9c27b0';       // Фиолетовый
+      return '#9C27B0';       // Фиолетовый — для 4-х часового отпуска
     case AbsenceType.RemoteWork:
-      return '#2e7d32';       // Зелёный
+      return '#388E3C';       // Тёмно-зеленый — для удалённой работы
     case AbsenceType.BusinessTripOut:
-      return '#0288d1';       // Голубой
+      return '#1976D2';       // Синий — для командировки
     default:
-      return '#999';
+      return '#BDBDBD';       // Серая палитра для неопределённого типа
   }
 }
+
 
 export function getIcon(type: AbsenceType): any {
   switch (type) {

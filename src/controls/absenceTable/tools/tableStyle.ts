@@ -47,33 +47,17 @@ export const getTheme = (mode: PaletteMode) => {
           },
         },
       },
-      MuiTextField: {
-        styleOverrides: {
-          root: {
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '16px',
-              bgcolor: mode === 'light' ? '#f0f0f0' : '#475569',
-              padding: '0 8px',
-              '&:hover': { bgcolor: mode === 'light' ? '#e0e0e0' : '#334155' },
-              '&.Mui-focused': { bgcolor: mode === 'light' ? '#d0d0d0' : '#1e293b' },
-            },
-            '& input': { padding: '8px 12px' },
-          },
-        },
-      },
       MuiButton: {
         styleOverrides: {
           root: {
             textTransform: 'none',
-            borderRadius: 8,
-            '&.MuiButton-outlined': {
-              borderColor: mode === 'light' ? '#ccc' : '#475569',
-              color: mode === 'light' ? '#000' : '#f8fafc',
-              '&:hover': {
-                borderColor: mode === 'light' ? '#999' : '#64748b',
-                backgroundColor: mode === 'light' ? '#e0e0e0' : '#1e293b',
-              },
-            },
+            borderRadius: 16,
+            px: 2,
+            py: 0.5,
+            minHeight: 36,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
           },
         },
       },
@@ -91,70 +75,6 @@ export const getTheme = (mode: PaletteMode) => {
           },
         },
       },
-      MuiPickersDay: {
-        styleOverrides: {
-          root: {
-            borderRadius: '16px',
-            '&.Mui-selected': {
-              bgcolor: '#4f46e5',
-              color: '#fff',
-              '&:hover': { bgcolor: '#4338ca' },
-            },
-            '&:hover': { bgcolor: mode === 'light' ? '#e0e0e0' : '#1e293b' },
-          },
-        },
-      },
-      MuiCalendarPicker: {
-        styleOverrides: {
-          root: {
-            '& .MuiPickersCalendar-weekContainer': {
-              justifyContent: 'center',
-            },
-          },
-        },
-      },
-      MuiPickersPopper: {
-        styleOverrides: {
-          paper: {
-            borderRadius: '16px',
-            overflow: 'hidden',
-          },
-        },
-      },
-      MuiPickersInputBase: {
-        styleOverrides: {
-          root: {
-            borderRadius: '16px',
-            bgcolor: mode === 'light' ? '#f0f0f0' : '#475569',
-            padding: '4px 12px',
-            minHeight: 36,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            '&:hover': {
-              bgcolor: mode === 'light' ? '#e0e0e0' : '#334155',
-            },
-            '&.Mui-focused': {
-              bgcolor: mode === 'light' ? '#d0d0d0' : '#1e293b',
-            },
-          },
-        },
-      },
-      MuiPickersSection: {
-        styleOverrides: {
-          root: {
-            color: mode === 'light' ? '#000' : '#f8fafc',
-            fontWeight: 500,
-          },
-        },
-      },
-      MuiPickersSectionContent: {
-        styleOverrides: {
-          root: {
-            padding: '4px 6px',
-          },
-        },
-      },
       MuiPaper: {
         styleOverrides: {
           root: {
@@ -162,6 +82,14 @@ export const getTheme = (mode: PaletteMode) => {
           },
         },
       },
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            borderRadius: 16,
+          },
+        },
+      },
+      
     },
   });
 };

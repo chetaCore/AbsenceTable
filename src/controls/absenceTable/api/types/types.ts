@@ -11,6 +11,7 @@ export interface Employee {
 }
 
 export interface EmployeeAbsence {
+  id: number;
   employeeId: number;
   type: AbsenceType;
   startDate: Date;

@@ -1,166 +1,102 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState } from 'react';
 import { IRemoteComponentCoverApi } from '@directum/sungero-remote-component-types';
-import { Box, ThemeProvider } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
-import { startOfWeek, endOfWeek } from 'date-fns';
-
-import { useEmployeeColumns } from './hooks/useEmployeeColumns';
-import { useEmployees } from './hooks/useEmployees';
-import { useEmployeeAbsences } from './hooks/useEmployeeAbsences';
-import { buildEmployeeRows } from './tools/buildEmployeeRows';
-import { useDateColumns } from './hooks/useDateColumns';
-import { GRID_RU_LOCALE_TEXT } from './gridLocale.ru';
+import { Alert, AlertTitle, Backdrop, Box, Button, CircularProgress, ThemeProvider } from '@mui/material';
 import { getTheme } from './tools/tableStyle';
 import { AbsenceToolbar } from './components/AbsenceToolbar';
-import { AbsenceType, Employee, EmployeeAbsence, Period } from './api/types/types';
+import { AbsenceGrid } from './components/AbsenceGrid';
+import { useAbsenceFilter } from './hooks/state/useAbsenceFilter';
+import { useEmployeeData } from './hooks/state/useEmployeeData';
+import { usePeriod } from './hooks/state/usePeriod';
+import { useThemeSwitcher } from './hooks/state/useThemeSwitcher';
+import { useLoadingAndErrors } from './hooks/state/useLoadingAndErrors';
 
-const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api }) => {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [loadingCount, setLoadingCount] = useState(0);
-  const [errors, setErrors] = useState<string[]>([]);
+export const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api }) => {
+  const { theme, toggleTheme } = useThemeSwitcher(); //Получить тему комопонента.
+  const { period, setPeriod } = usePeriod();  //Получить период отображения отсутвий.
+  const { filter, setFilter, absencesTypesState, setAbsencesTypesState } = useAbsenceFilter(); //Получить фильтр сотрудников и сосотояние отображения типов остутвий.
+  const { isLoading, errors, handleLoadingChange, handleError, clearErrors } = useLoadingAndErrors(); //Получить ошибки и признак загрузки.
 
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [absences, setAbsences] = useState<EmployeeAbsence[]>([]);
-  const [filter, setFilter] = useState('');
   const [isShowIcons, setIsShowIcons] = useState(true);
   const [isWideColumns, setIsWideColumns] = useState(false);
   const [isShowEmptyEmployees, setIsShowEmptyEmployees] = useState(false);
 
-  const [period, setPeriod] = useState<Period>({
-    startDate: startOfWeek(new Date(), { weekStartsOn: 1 }),
-    endDate: endOfWeek(new Date(), { weekStartsOn: 1 }),
-  });
-
-  const [absencesTypesState, setAbsencesTypesState] = useState<Record<AbsenceType, boolean>>({
-    [AbsenceType.Vacation]: true,
-    [AbsenceType.SickLeave]: true,
-    [AbsenceType.JobDeparture]: true,
-    [AbsenceType.LeaveOfAbs4h]: true,
-    [AbsenceType.RemoteWork]: true,
-    [AbsenceType.BusinessTripOut]: true,
-  });
-
-  // --- Callbacks and handlers ---
-  const handleLoadingChange = useCallback((isLoading: boolean) => {
-    setLoadingCount((count) => count + (isLoading ? 1 : -1));
-  }, []);
-
-  const handleError = useCallback((error: string) => {
-    setErrors((prev) => [...prev, error]);
-  }, []);
-
-  // --- Memoized parameters to prevent infinite fetch ---
-  const employeeParams = useMemo(
-    () => ({
-      filter,
-      onEmployeesChange: setEmployees,
-      onLoadingChange: handleLoadingChange,
-      onError: handleError,
-    }),
-    [filter, handleLoadingChange, handleError]
-  );
-
-  const absencesParams = useMemo(
-    () => ({
-      employees,
-      period,
-      onAbsencesChange: setAbsences,
-      onLoadingChange: handleLoadingChange,
-      onError: handleError,
-    }),
-    [employees, period, handleLoadingChange, handleError]
-  );
-
-  // --- Custom hooks (they use useEffect inside themselves) ---
-  useEmployees(employeeParams);
-  useEmployeeAbsences(absencesParams);
-
-  // --- Columns and rows ---
-  const employeeColumns = useEmployeeColumns({
-    width: 300,
-    minWidth: 300,
-    employeeCount: employees?.length,
-  });
-
-  const weekDaysColumns = useDateColumns({
-    width: isWideColumns ? 200 : 100,
-    minWidth: isWideColumns ? 240 : 120,
-    absencesTypesState,
+  const { employees, allEmployees, absences, refreshAbcences, refreshEmployees } = useEmployeeData({
+    filter,
     period,
-    isShowIcons,
+    onLoadingChange: handleLoadingChange,
+    onError: handleError,
   });
-
-  const allColumns = useMemo(
-    () => [...employeeColumns, ...weekDaysColumns],
-    [employeeColumns, weekDaysColumns]
-  );
-
-  const rows = useMemo(
-    () => buildEmployeeRows(employees, period, absences, isShowEmptyEmployees),
-    [employees, absences, period, isShowEmptyEmployees]
-  );
-
-  const isLoading = loadingCount > 0;
 
   return (
     <ThemeProvider theme={getTheme(theme)}>
-      <Box
-        sx={{
-          flex: '1 1 auto',
-          minWidth: 0,
-          overflowX: 'auto',
-          overflowY: 'hidden',
-          display: 'block',
-          '& table': {
-            tableLayout: 'fixed',
-            width: 'max-content',
-            borderCollapse: 'collapse',
-          },
-          '& th, & td': {
-            whiteSpace: 'nowrap',
-          },
-        }}
-      >
+      <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
         <AbsenceToolbar
           absencesTypesState={absencesTypesState}
+          allEmployees={allEmployees}
+          employees={employees}
+          abcences={absences}
           filter={filter}
           period={period}
           theme={theme}
           isShowIcons={isShowIcons}
           isWideColumns={isWideColumns}
           isShowEmptyEmployees={isShowEmptyEmployees}
+          onRefresh={refreshAbcences}
           onAbsencesTypesStateToggle={setAbsencesTypesState}
           onShowIconClick={setIsShowIcons}
           onFilterValueChange={setFilter}
           onPeriodChange={setPeriod}
-          onThemeChanged={(value) => setTheme(value ? 'dark' : 'light')}
+          onThemeChanged={toggleTheme}
           onScaleChanged={setIsWideColumns}
           onShowEmptyEmployeesChanged={setIsShowEmptyEmployees}
         />
 
-        <DataGrid
-          key={isWideColumns ? 'wide' : 'normal'}
-          columns={allColumns}
-          rows={rows}
-          hideFooter
-          disableVirtualization
-          showCellVerticalBorder
-          showColumnVerticalBorder
-          getRowHeight={() => 60}
-          localeText={GRID_RU_LOCALE_TEXT}
-          loading={isLoading}
-          sx={{
-            flex: 1,
-            width: '100%',
-            height: '100%',
-            '& .MuiDataGrid-virtualScroller': {
-              overflowY: 'auto',
-            },
-          }}
+        {errors.length > 0 && (
+          <Box>
+            {errors.map((error, index) => (
+              <Alert
+                key={index}
+                severity="error"
+                action={
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => {
+                      clearErrors();
+                      refreshAbcences();
+                      refreshEmployees();
+                    }}
+                  >
+                    Обновить
+                  </Button>
+                }
+              >
+                <AlertTitle>Ошибка:</AlertTitle>
+                {error}
+              </Alert>
+            ))}
+          </Box>
+        )}
+
+        <AbsenceGrid
+          employees={employees}
+          absences={absences}
+          period={period}
+          absencesTypesState={absencesTypesState}
+          isShowIcons={isShowIcons}
+          isWideColumns={isWideColumns}
+          isShowEmptyEmployees={isShowEmptyEmployees}
+          isLoading={isLoading}
         />
+
+        {/* Индикатор загрузки */}
+        {isLoading && (
+          <Backdrop open={isLoading} sx={{ color: '#fff', zIndex: 1300 }}>
+            <CircularProgress color="inherit" />
+          </Backdrop>
+        )}
       </Box>
     </ThemeProvider>
   );
 };
 
-export default AbsenceTable;

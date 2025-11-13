@@ -13,6 +13,11 @@ export interface ApiResult<T> {
   progress?: number;
 }
 
+export interface RequestResult {
+  result?: string;
+  error?: string;
+}
+
 export interface RequestWrapperOptions {
   onUploadProgress?: (percent: number) => void;
   disableLoader?: boolean;
@@ -113,7 +118,7 @@ export const callOdataMethod = <TRequest, TResponse>(
 
     const response = await request;
 
-    const raw = response.data.value;
+    const raw = response.data.value ?? response.data;
     let parsed: any;
     if (typeof raw === "string") {
       try {

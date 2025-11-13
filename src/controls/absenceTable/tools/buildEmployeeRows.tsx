@@ -1,4 +1,5 @@
 import { Employee, EmployeeAbsence } from '../api/types/types';
+import { getFieldKeyByDate } from './absenceCommon';
 
 export function buildEmployeeRows(
   employees: Employee[],
@@ -35,7 +36,7 @@ export function buildEmployeeRows(
 
         if (todaysAbsences.length > 0) hasAnyAbsence = true;
 
-        row[`${date.getDate()}`] = todaysAbsences.length > 0 ? todaysAbsences : null;
+        row[`${getFieldKeyByDate(date)}`] = todaysAbsences.length > 0 ? todaysAbsences : null;
       }
 
       if (!isShowEmptyEmployees && !hasAnyAbsence) return null;
