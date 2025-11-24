@@ -5,6 +5,7 @@ import { getColor } from '../tools/absenceCommon';
 import { AbsenceType } from '../api/types/types';
 
 interface AbsenceInputProps {
+  theme: 'dark' | 'light';
   type: AbsenceType;
   value: string;
   onChange: (value: string) => void;
@@ -13,6 +14,7 @@ interface AbsenceInputProps {
   debounceMs?: number;
 }
 export const AbsenceInput: React.FC<AbsenceInputProps> = ({
+  theme,
   type,
   value,
   onChange,
@@ -20,7 +22,7 @@ export const AbsenceInput: React.FC<AbsenceInputProps> = ({
   active = false,
   debounceMs = 300,
 }) => {
-  const color = getColor(type);
+  const color = getColor(type, theme);
   const [internalValue, setInternalValue] = useState(value);
 
   useEffect(() => {

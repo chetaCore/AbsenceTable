@@ -1,25 +1,51 @@
 {
-    "gantt": {
-        "title": "Диаграмма Ганта"
+  "errors": {
+    "unexpectedError": "Неизвестная ошибка",
+    "employeeLoadError": "Ошибка загрузки сотрудника",
+    "absenceLoadError": "Ошибка загрузки отсутствия",
+    "createAbsenceError": "Ошибка при создании отсутствия",
+    "startDateAfterEndDate": "Дата начала не может быть больше даты окончания",
+    "updateAbsenceError": "Ошибка при обновлении отсутствия",
+    "removeAbsenceError": "Ошибка при удалении отсутствия"
+  },
+  "columns": {
+    "employees": "Сотрудники"
+  },
+  "components": {
+    "common": {
+      "numberOfHours": "Количество часов:",
+      "saving": "Сохранение",
+      "save": "Сохранить",
+      "create": "Создать",
+      "removing": "Удаление",
+      "remove": "Удалить",
+      "change": "Изменить",
+      "cancellation": "Отмена",
+      "employee": "Сотрудник"
     },
-    "stringControl": {
-        "label": "Содержание"
+    "editAbsenceDialog": {
+      "title": "Редактировать отсутствие",
+      "selectedAbsence": "Выбранное отсутствие",
+      "dates": "Даты",
+      "recordDate": "Дата заявления",
+      "absenceFrom": "Отсутствие с",
+      "absenceTo": "Отсутствие по"
     },
-    "performedWorkDetailsGrid": {
-        "columns": {
-            "id": "ИД",
-            "title": "Наименование",
-            "jobKind": "Вид работ",
-            "duration": "Часы",
-            "comment": "Примечание"
-        },
-        "buttons": {
-            "copy": "Скопировать",
-            "remove": "Удалить",
-            "add": "Добавить запись"
-        },
-        "summary": {
-            "total": "Итого"
-        }
+    "autocomplete": {
+      "labels": {},
+      "helperTexts": {
+        "selectEmployee": "Выберите сотрудника"
+      },
+      "noOptionsText": "Ничего не найдено"
     }
+  },
+  "absenceTypes": {
+    "vacation": "Отпуск",
+    "sickLeave": "Больничный",
+    "jobDeparture": "Командировка",
+    "leaveOfAbs4h": "Отсутствие <4ч",
+    "remoteWork": "Удалёнка",
+    "businessTripOut": "Выезд",
+    "unknown": "Неизвестно"
+  }
 }

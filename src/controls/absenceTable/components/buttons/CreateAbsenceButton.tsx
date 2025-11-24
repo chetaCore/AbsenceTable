@@ -1,40 +1,44 @@
-import React, { useState } from 'react';
-import { Button } from '@mui/material';
+import React, { useState, useTransition } from 'react';
+import { Button, colors, Paper } from '@mui/material';
 import { CreateAbsenceDialog } from '../dialogs/CreateAbsenceDialog';
 import { Employee } from '../../api/types/types';
 import { CreateAbsenceDTO } from '../../api/dto';
-import { createAbsence } from '../../api/odata';
+import { RequestResult } from '../../api/api';
+import { useTranslation } from 'react-i18next';
 
 interface CreateAbsenceButtonProps {
   employees: Employee[];
-  onRefresh: () => Promise<void>;
+  onCreateAbsence: (data: CreateAbsenceDTO) => Promise<RequestResult>;
 }
 
-export const CreateAbsenceButton: React.FC<CreateAbsenceButtonProps> = ({ employees, onRefresh }) => {
+export const CreateAbsenceButton: React.FC<CreateAbsenceButtonProps> = ({
+  employees,
+  onCreateAbsence
+}) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
-  const handleCreate = async (data: CreateAbsenceDTO) => {
-    const response = await createAbsence(data);
-
-    if (!response.success) {
-      throw new Error('Ошибка при создании отсутствия');
-    }
-
-    await onRefresh();
-  };
-
   return (
-    <>
-      <Button variant="contained" color="success" onClick={() => setOpen(true)}>
-        Создать отсутствие
+    <Paper
+      elevation={3}
+      sx={{
+        width: '100%',
+      }}>
+      <Button
+        fullWidth
+        variant="contained"
+        onClick={() => setOpen(true)}
+        sx={{ height: 36 }}
+      >
+        {t("components.common.create")}
       </Button>
 
       <CreateAbsenceDialog
         open={open}
         employees={employees}
         onClose={() => setOpen(false)}
-        onCreate={handleCreate}
+        onCreate={onCreateAbsence}
       />
-    </>
+    </Paper>
   );
 };

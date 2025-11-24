@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
-export function useThemeSwitcher() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+export function useThemeSwitcher(defaultTheme: 'light' | 'dark') {
+  const [theme, setTheme] = useState<'light' | 'dark'>(defaultTheme);
   const toggleTheme = (value: boolean) => setTheme(value ? 'dark' : 'light');
-  return { theme, toggleTheme };
+  return { theme, setTheme: toggleTheme };
 }

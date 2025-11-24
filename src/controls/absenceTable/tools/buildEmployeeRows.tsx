@@ -1,5 +1,5 @@
 import { Employee, EmployeeAbsence } from '../api/types/types';
-import { getFieldKeyByDate } from './absenceCommon';
+import { getFieldKeyByDate, stripTime } from './absenceCommon';
 
 export function buildEmployeeRows(
   employees: Employee[],
@@ -29,9 +29,7 @@ export function buildEmployeeRows(
 
       for (const date of dates) {
         const todaysAbsences = absences.filter(a =>
-          a.employeeId === emp.id &&
-          stripTime(date) >= stripTime(new Date(a.startDate)) &&
-          stripTime(date) <= stripTime(new Date(a.endDate))
+          a.employeeId === emp.id
         );
 
         if (todaysAbsences.length > 0) hasAnyAbsence = true;
@@ -44,10 +42,4 @@ export function buildEmployeeRows(
       return row;
     })
     .filter(Boolean);
-}
-
-function stripTime(date: Date): Date {
-  const copy = new Date(date);
-  copy.setHours(0, 0, 0, 0);
-  return copy;
 }

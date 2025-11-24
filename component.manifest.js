@@ -1,5 +1,5 @@
 module.exports = {
-  vendorName: 'Directum',
+  vendorName: 'Rosa',
   componentName: 'AbsenceSolution',
   componentVersion: '1.0',
   controls: [

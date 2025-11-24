@@ -3,11 +3,10 @@ import {
   Avatar,
   Card,
   CardActionArea,
-  CardContent,
   Stack,
   Typography,
-  Paper,
   Divider,
+  Box,
 } from "@mui/material";
 import { Employee } from "../api/types/types";
 
@@ -15,7 +14,6 @@ interface EmployeeCardProps {
   employee: Employee;
 }
 
-// Функция для получения стабильного цвета по имени
 const stringToColor = (str: string): string => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -29,13 +27,12 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({
   employee: { name: name, personalPhoto: photo, department: department, uri },
 }) => {
   const avatarColor = useMemo(() => stringToColor(name), [name]);
-  const photoSrc = photo?.value
-    ? `data:image/jpeg;base64,${photo.value}`
+  const photoSrc = photo
+    ? `data:image/jpeg;base64,${photo}`
     : null;
 
   return (
-    <Paper
-      elevation={2}
+    <Box
       sx={{
         borderRadius: 2,
         overflow: "hidden",
@@ -86,12 +83,12 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({
                 color="text.secondary"
                 sx={{ fontSize: 13 }}
               >
-                {department?.name}
+                 {department}
               </Typography>
             </Stack>
           </Stack>
         </CardActionArea>
       </Card>
-    </Paper>
+    </Box>
   );
 };

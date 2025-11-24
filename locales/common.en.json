@@ -1,25 +1,51 @@
 {
-    "gantt": {
-        "title": "Gantt diagram"
+  "errors": {
+    "unexpectedError": "Unexpected Error",
+    "employeeLoadError": "Employee load error",
+    "absenceLoadError": "Absence load error",
+    "createAbsenceError": "Error occurred while creating absence",
+    "startDateAfterEndDate": "Start date cannot be after end date",
+    "updateAbsenceError": "Error occurred while updating absence",
+    "removeAbsenceError": "Error occurred while removing absence"
+  },
+  "columns": {
+    "employees": "Employees"
+  },
+  "components": {
+    "common": {
+      "numberOfHours": "Number of hours:",
+      "saving": "Saving",
+      "save": "Save",
+      "create": "Create",
+      "removing": "Removing",
+      "remove": "Remove",
+      "change": "Change",
+      "cancellation": "Cancellation",
+      "employee": "Employee"
     },
-    "stringControl": {
-        "label": "Subject"
+    "editAbsenceDialog": {
+      "title": "Edit Absence",
+      "selectedAbsence": "Selected absence",
+      "dates": "Dates",
+      "recordDate": "Application date",
+      "absenceFrom": "Absence from",
+      "absenceTo": "Absence to"
     },
-    "performedWorkDetailsGrid": {
-        "columns": {
-            "id": "ID",
-            "title": "Title",
-            "jobKind": "Job kind",
-            "duration": "Duration",
-            "comment": "Comment"
-        },
-        "buttons": {
-            "copy": "Copy",
-            "remove": "Remove",
-            "add": "Add entry"
-        },
-        "summary": {
-            "total": "Total"
-        }
+    "autocomplete": {
+      "labels": {},
+      "helperTexts": {
+        "selectEmployee": "Select employee"
+      },
+      "noOptionsText": "Nothing was found"
     }
+  },
+  "absenceTypes": {
+    "vacation": "Vacation",
+    "sickLeave": "Sick Leave",
+    "jobDeparture": "Business Trip",
+    "leaveOfAbs4h": "Leave <4h",
+    "remoteWork": "Remote Work",
+    "businessTripOut": "Departure",
+    "unknown": "Unknown"
+  }
 }

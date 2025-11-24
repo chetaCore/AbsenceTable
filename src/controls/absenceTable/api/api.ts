@@ -4,6 +4,9 @@ import axios, {
   AxiosResponse,
   AxiosProgressEvent,
 } from "axios";
+import { BASE_URL_PROD, BASE_URL_DEV, AUTH_CREDENTIALS } from "../constants";
+
+const isProd = process.env.NODE_ENV === "production";
 
 export interface ApiResult<T> {
   success: boolean;
@@ -24,12 +27,13 @@ export interface RequestWrapperOptions {
 }
 
 const api = axios.create({
-  baseURL: "http://localhost/integration/odata/",
+  baseURL: isProd ? BASE_URL_PROD : BASE_URL_DEV,
   headers: { "Content-Type": "application/json" },
-  auth: {
-    username: "Service User",
-    password: "1Qwerty",
-  },
+  ...(isProd
+    ? {}
+    : {
+        auth: AUTH_CREDENTIALS,
+      }),
 });
 
 api.interceptors.request.use((config) => {
@@ -68,7 +72,7 @@ export async function requestWrapper<T>(
       progress: 100,
     };
   } catch (err: unknown) {
-    let errorMessage = "Unexpected error";
+    let errorMessage = ":";
     let status: number | undefined;
 
     if (axios.isAxiosError(err)) {

@@ -4,23 +4,29 @@ import { Box } from '@mui/material';
 import { AbsenceType, EmployeeAbsence, Period } from '../../api/types/types';
 import { getFieldKeyByDate, stripTime } from '../../tools/absenceCommon';
 import { AbsenceCapsule } from '../../components/AbsenceCapsule';
-import { ClickableEmptySlot } from '../../components/ClickableEmptySlot';
-import { CreateAbsenceDialog } from '../../components/dialogs/CreateAbsenceDialog';
+import { RequestResult } from '../../api/api';
+import { RemoveAbsenceDTO, EditAbsenceDTO } from '../../api/dto';
 
 interface UseDateColumnsProps {
+  theme: 'dark' | 'light';
   width: number;
   minWidth: number;
   absencesTypesState?: Record<AbsenceType, boolean>;
   period: Period;
   isShowIcons: boolean;
+  onEditAbsence?: (absence: EditAbsenceDTO) => Promise<RequestResult>;
+  onRemoveAbsence?: (data: RemoveAbsenceDTO) => Promise<RequestResult>;
 }
 
 export function useDateColumns({
+  theme,
   width,
   minWidth,
   absencesTypesState,
   period,
-  isShowIcons
+  isShowIcons,
+  onEditAbsence,
+  onRemoveAbsence
 }: UseDateColumnsProps): GridColDef[] {
 
   const dates = React.useMemo(() => {
@@ -41,8 +47,6 @@ export function useDateColumns({
   const columns = React.useMemo<GridColDef[]>(() => {
     return dates.map((day) => {
       const isToday = stripTime(day).getTime() === today.getTime();
-      const highlightBg = 'rgba(0, 123, 255, 0.08)';
-      const highlightBorder = '1px solid rgba(0, 123, 255, 0.3)';
 
       return {
         field: `${getFieldKeyByDate(day)}`,
@@ -90,19 +94,17 @@ export function useDateColumns({
             (a) => !absencesTypesState || absencesTypesState[a.type]
           );
 
-          if (absences.length === 0) {
-            return (
-              <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
-                <ClickableEmptySlot onClick={() => console.log("Клик")} />
-              </Box>
-            );
-          }
+          const employeeName = params.row?.name;
 
           return (
             <AbsenceCapsule
+              theme={theme}
+              capsuleDate={new Date(params.field)}
+              employeeName={employeeName}
               absences={absences}
-              isToday={isToday}
               isShowIcons={isShowIcons}
+              onEditAbsence={onEditAbsence}
+              onRemoveAbsence={onRemoveAbsence}
             />
           );
         },

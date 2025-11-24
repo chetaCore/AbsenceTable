@@ -1,13 +1,9 @@
 export interface Employee {
   id: number;
   name: string;
-  personalPhoto?: {
-    value: string;
-  };
-  department?: {
-    name: string;
-  };
-  uri?: string;
+  personalPhoto: string;
+  department : string;
+  uri: string;
 }
 
 export interface EmployeeAbsence {
@@ -16,8 +12,11 @@ export interface EmployeeAbsence {
   type: AbsenceType;
   startDate: Date;
   endDate: Date;
+  applicationDate: Date;
+  hours: number;
   startWorkHour: number;
   endWorkHour: number;
+  tooltipData: string;
 }
 
 export enum AbsenceType {

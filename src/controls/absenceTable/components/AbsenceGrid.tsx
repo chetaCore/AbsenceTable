@@ -1,12 +1,18 @@
 import { DataGrid } from '@mui/x-data-grid';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Employee, EmployeeAbsence, Period, AbsenceType } from '../api/types/types';
 import { GRID_RU_LOCALE_TEXT } from '../gridLocale.ru';
 import { useDateColumns } from '../hooks/gridColumns/useDateColumns';
 import { useEmployeeColumns } from '../hooks/gridColumns/useEmployeeColumns';
 import { buildEmployeeRows } from '../tools/buildEmployeeRows';
+import { RequestResult } from '../api/api';
+import { EditAbsenceDTO, RemoveAbsenceDTO } from '../api/dto';
+import { COLUMN_HEIGHT, DATE_COLUMNS_WIDTH, EMPLOYEE_COLUMNS_WIDTH, MIN_DATE_COLUMNS_WIDTH, MIN_EMPLOYEE_COLUMNS_WIDTH, MIN_WIDE_DATE_COLUMNS_WIDTH, WIDE_DATE_COLUMNS_WIDTH } from '../constants';
 
 export const AbsenceGrid: React.FC<{
+  theme: 'dark' | 'light';
+  filter: number[],
+  allEmployees: Employee[];
   employees: Employee[];
   absences: EmployeeAbsence[];
   period: Period;
@@ -15,7 +21,13 @@ export const AbsenceGrid: React.FC<{
   isWideColumns: boolean;
   isShowEmptyEmployees: boolean;
   isLoading: boolean;
+  onFilterChange: (employeesIds: number[]) => void;
+  onEditAbsence?: (absence: EditAbsenceDTO) => Promise<RequestResult>;
+  onRemoveAbsence?: (data: RemoveAbsenceDTO) => Promise<RequestResult>;
 }> = ({
+  theme,
+  filter,
+  allEmployees,
   employees,
   absences,
   period,
@@ -24,19 +36,27 @@ export const AbsenceGrid: React.FC<{
   isWideColumns,
   isShowEmptyEmployees,
   isLoading,
+  onEditAbsence,
+  onRemoveAbsence,
+  onFilterChange
 }) => {
   const employeeColumns = useEmployeeColumns({
-    width: 300,
-    minWidth: 300,
-    employeeCount: employees?.length,
+    width: EMPLOYEE_COLUMNS_WIDTH,
+    minWidth: MIN_EMPLOYEE_COLUMNS_WIDTH,
+    filter: filter,
+    employees: allEmployees,
+    onFilterChange
   });
 
   const weekDaysColumns = useDateColumns({
-    width: isWideColumns ? 200 : 100,
-    minWidth: isWideColumns ? 240 : 120,
+    theme,
+    width: isWideColumns ? WIDE_DATE_COLUMNS_WIDTH : DATE_COLUMNS_WIDTH,
+    minWidth: isWideColumns ? MIN_WIDE_DATE_COLUMNS_WIDTH : MIN_DATE_COLUMNS_WIDTH,
     absencesTypesState,
     period,
     isShowIcons,
+    onEditAbsence,
+    onRemoveAbsence
   });
 
   const allColumns = useMemo(() => [...employeeColumns, ...weekDaysColumns], [employeeColumns, weekDaysColumns]);
@@ -51,7 +71,7 @@ export const AbsenceGrid: React.FC<{
       disableVirtualization
       showCellVerticalBorder
       showColumnVerticalBorder
-      getRowHeight={() => 60}
+      getRowHeight={() => COLUMN_HEIGHT}
       localeText={GRID_RU_LOCALE_TEXT}
       loading={isLoading}
       sx={{

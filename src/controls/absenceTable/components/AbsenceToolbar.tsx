@@ -1,8 +1,20 @@
 import React, { useState } from 'react';
-import { Edit, Image, PeopleAlt, PersonOff } from '@mui/icons-material';
+import {
+  Edit,
+  Image,
+  PeopleAlt,
+  PersonOff,
+  ExpandLess,
+  ExpandMore
+} from '@mui/icons-material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ru } from 'date-fns/locale';
-import { ButtonGroup, Stack, Box, Divider, Button, Autocomplete, TextField, Chip, Checkbox, ListItemText } from '@mui/material';
+import {
+  Stack,
+  Box,
+  Divider,
+  IconButton
+} from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AbsenceType, Employee, EmployeeAbsence, Period } from '../api/types/types';
 import { AbsenceSwitcher } from './AbsenceSwitcher';
@@ -11,62 +23,58 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
 import ZoomInMapIcon from '@mui/icons-material/ZoomInMap';
 import { PeriodPicker } from './PeriodPicker';
-import { getAbsenceTypeName } from '../tools/absenceCommon';
 import { CreateAbsenceButton } from './buttons/CreateAbsenceButton';
 import { AbsenceButton } from './buttons/AbsenceButton';
 import { RemoveAbsenceButton } from './buttons/RemoveAbsenceButton';
-import { MergeAbsenceButton } from './buttons/MergeAbsenceButton';
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import { CreateAbsenceDTO, RemoveAbsenceDTO } from '../api/dto';
+import { RequestResult } from '../api/api';
+import { getAbsenceTypeName } from '../tools/absenceCommon';
+import { useTranslation } from 'react-i18next';
 
 interface AbsenceToolbarProps {
   absencesTypesState: Record<AbsenceType, boolean>;
-  allEmployees: Employee[];
   employees: Employee[];
   abcences: EmployeeAbsence[];
-  filter: number[];
   period: Period;
   theme: 'dark' | 'light';
   isShowEmptyEmployees: boolean;
   isShowIcons: boolean;
   isWideColumns: boolean;
-  onRefresh: () => Promise<void>;
   onAbsencesTypesStateToggle: (newAbsences: Record<AbsenceType, boolean>) => void;
   onShowIconClick: (value: boolean) => void;
-  onFilterValueChange: (value: number[]) => void;
   onPeriodChange: (period: Period) => void;
   onThemeChanged: (value: boolean) => void;
   onScaleChanged: (value: boolean) => void;
   onShowEmptyEmployeesChanged: (value: boolean) => void;
+  onCreateAbsence?: (data: CreateAbsenceDTO) => Promise<RequestResult>
+  onRemoveAbsence?: (data: RemoveAbsenceDTO) => Promise<RequestResult>;
 }
-
-const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
-const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
 export const AbsenceToolbar: React.FC<AbsenceToolbarProps> = ({
   absencesTypesState: activeAbsences,
-  allEmployees,
   employees,
   abcences,
-  filter,
   period,
   theme,
   isShowIcons,
   isWideColumns,
   isShowEmptyEmployees,
-  onRefresh,
   onAbsencesTypesStateToggle,
   onShowIconClick,
-  onFilterValueChange,
   onPeriodChange,
   onThemeChanged,
   onScaleChanged,
-  onShowEmptyEmployeesChanged
+  onShowEmptyEmployeesChanged,
+  onCreateAbsence,
+  onRemoveAbsence
 }) => {
+
+  const [collapsed, setCollapsed] = useState(false);
+  const { t } = useTranslation();
 
   const absenceButtons = Object.values(AbsenceType).map((type) => ({
     type,
-    label: getAbsenceTypeName(type),
+    label: getAbsenceTypeName(type, t),
   }));
 
   const chunkedButtons: typeof absenceButtons[] = [];
@@ -84,143 +92,150 @@ export const AbsenceToolbar: React.FC<AbsenceToolbarProps> = ({
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ru}>
-      <Box p={1} m={1}>
-        <Stack spacing={2} >
-          {/* Верхний ряд: кнопки, переключатели, DatePicker */}
-          <Stack
-            direction="row"
-            spacing={2}
-            alignItems="center"
-            justifyContent="flex-start"
-            flexWrap="nowrap"
-            sx={{ overflowX: 'auto' }}
-          >
+      <Box
+        p={1}
+        m={1}
+        sx={(theme) => ({
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: theme.palette.divider,
+          backgroundColor: theme.palette.background.default,
+          color: theme.palette.text.primary,
+        })}
+      >
+        {/* Контент скрывается */}
+        {!collapsed && (
+          <Stack spacing={2} mt={1}>
+            {/* Верхний блок */}
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              flexWrap="nowrap"
+              sx={{ overflowX: 'auto' }}
+            >
 
-            {/* Кнопки отсутствий */}
-            <Stack spacing={2} flex={1}>
-              {chunkedButtons.map((row, index) => (
-                <ButtonGroup
-                  key={index}
-                  variant="outlined"
-                  fullWidth
-                >
-                  {row.map(({ type, label }) => (
+
+              {/* Блок кнопок отсутствий + действий */}
+              <Stack spacing={1} sx={{ minWidth: 500, maxWidth: 500 }}>
+                {/* Ряды кнопок отсутствий по 3 */}
+                {(() => {
+                  const absenceButtons = Object.values(AbsenceType).map((type) => (
                     <AbsenceButton
                       key={type}
+                      theme={theme}
                       type={type}
                       active={activeAbsences[type]}
                       onClick={() => handleAbsenceToggle(type)}
                     >
-                      {label}
+                      {getAbsenceTypeName(type, t)}
                     </AbsenceButton>
-                  ))}
-                </ButtonGroup>
-              ))}
-            </Stack>
+                  ));
 
-            <Divider orientation="vertical" flexItem />
+                  const rows: JSX.Element[] = [];
+                  for (let i = 0; i < absenceButtons.length; i += 3) {
+                    rows.push(
+                      <Stack
+                        key={`absence-${i}`}
+                        direction="row"
+                        spacing={1}
+                        justifyContent="flex-start"
+                      >
+                        {absenceButtons.slice(i, i + 3)}
+                      </Stack>
+                    );
+                  }
 
-            {/* Переключатели */}
-            <Stack direction="column" spacing={1} alignItems="center">
-              {/* Показ иконок / текста */}
-              <AbsenceSwitcher
-                checked={isShowIcons}
-                onChange={(value) => {
-                  onShowIconClick(value);
-                }}
-                iconOn={Image}
-                iconOff={Edit}
-                tooltipOn="Показать текст"
-                tooltipOff="Показать иконки"
-              />
+                  return rows;
+                })()}
 
-              {/* Светлая / темная тема */}
-              <AbsenceSwitcher
-                checked={theme === 'dark'}
-                onChange={onThemeChanged}
-                iconOn={DarkModeIcon}
-                iconOff={LightModeIcon}
-                tooltipOn="Темная тема"
-                tooltipOff="Светлая тема"
-              />
+                {onCreateAbsence && onRemoveAbsence ? (
+                  <>
+                    <Divider orientation="horizontal" flexItem />
 
-              {/* Масштаб столбцов */}
-              <AbsenceSwitcher
-                checked={isWideColumns}
-                onChange={(value) => {
-                  console.log(value);
-                  onScaleChanged(value);
-                }}
-                iconOn={ZoomOutMapIcon}
-                iconOff={ZoomInMapIcon}
-                tooltipOn="Масштаб столбцов x2"
-                tooltipOff="Масштаб столбцов x1"
-              />
+                    {/* Ряд действий: Create / Remove */}
+                    <Stack direction="row" spacing={1} justifyContent="flex-start">
+                      <CreateAbsenceButton employees={employees} onCreateAbsence={onCreateAbsence} />
+                      <RemoveAbsenceButton employees={employees} absences={abcences} onRemoveAbsence={onRemoveAbsence} />
+                    </Stack>
+                  </>
+                ) : null}
 
-              {/* Показ сотрудников без отсутствий */}
-              <AbsenceSwitcher
-                checked={isShowEmptyEmployees}
-                onChange={(value) => {
-                  onShowEmptyEmployeesChanged(value);
-                }}
-                iconOn={PeopleAlt}
-                iconOff={PersonOff}
-                tooltipOn="Показать всех сотрудников"
-                tooltipOff="Скрыть сотрудников без отсутствий"
-              />
-            </Stack>
+              </Stack>
 
-            <Divider orientation="vertical" flexItem />
+              <Divider orientation="vertical" flexItem />
 
-            {/* DatePicker */}
-            <Stack direction="row" spacing={1} alignItems="center">
+              {/* Переключатели */}
+              <Stack direction="column" spacing={1} alignItems="center">
+
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <AbsenceSwitcher
+                    checked={isShowIcons}
+                    onChange={onShowIconClick}
+                    iconOn={Image}
+                    iconOff={Edit}
+                    tooltipOn="Показать текст"
+                    tooltipOff="Показать иконки"
+                  />
+
+                  <Divider orientation="vertical" flexItem />
+
+                  <AbsenceSwitcher
+                    checked={theme === 'dark'}
+                    onChange={onThemeChanged}
+                    iconOn={DarkModeIcon}
+                    iconOff={LightModeIcon}
+                    tooltipOn="Темная тема"
+                    tooltipOff="Светлая тема"
+                  />
+                </Stack>
+
+                <Stack direction="row" spacing={1} alignItems="center">
+
+                  <AbsenceSwitcher
+                    checked={isWideColumns}
+                    onChange={onScaleChanged}
+                    iconOn={ZoomOutMapIcon}
+                    iconOff={ZoomInMapIcon}
+                    tooltipOn="Масштаб столбцов x2"
+                    tooltipOff="Масштаб столбцов x1"
+                  />
+
+                  <Divider orientation="vertical" flexItem />
+
+                  <AbsenceSwitcher
+                    checked={isShowEmptyEmployees}
+                    onChange={onShowEmptyEmployeesChanged}
+                    iconOn={PeopleAlt}
+                    iconOff={PersonOff}
+                    tooltipOn="Показать всех сотрудников"
+                    tooltipOff="Скрыть сотрудников без отсутствий"
+                  />
+                </Stack>
+              </Stack>
+
+
+              <Divider orientation="vertical" flexItem />
+
+              {/* Период */}
               <PeriodPicker period={period} onPeriodChange={onPeriodChange} />
             </Stack>
           </Stack>
-
-          <Divider />
-
-          <Stack direction="row" spacing={1} alignItems="center">
-            {/* Фильтр сотрудников */}
-            <Autocomplete
-              multiple
-              options={allEmployees}
-              disableCloseOnSelect
-              getOptionLabel={(option) => option.name}
-              value={allEmployees.filter(e => filter.includes(e.id))}
-              onChange={(_, newValues) => onFilterValueChange(newValues.map(e => e.id))}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.id}>
-                  <Checkbox
-                    icon={icon}
-                    checkedIcon={checkedIcon}
-                    style={{ marginRight: 8 }}
-                    checked={selected}
-                  />
-                  <ListItemText primary={option.name} />
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  placeholder="Сотрудник"
-                  label="Фильтр"
-                  variant="outlined"
-                />
-              )}
-              noOptionsText="Ничего не нашлось"
-              sx={{ width: 300 }}
-            />
-
-            {/* Группа кнопок управления отсутствиями */}
-            <ButtonGroup variant="outlined" size="medium">
-              <CreateAbsenceButton employees={employees} onRefresh={onRefresh} />
-              <MergeAbsenceButton employees={employees} absences={abcences} onRefresh={onRefresh} />
-              <RemoveAbsenceButton employees={employees} absences={abcences} onRefresh={onRefresh} />
-            </ButtonGroup>
-          </Stack>
-        </Stack>
+        )}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100%',
+            height: 20,
+          }}
+        >
+          <IconButton onClick={() => setCollapsed(prev => !prev)}>
+            {collapsed ? <ExpandMore /> : <ExpandLess />}
+          </IconButton>
+        </Box>
       </Box>
-    </LocalizationProvider >
+    </LocalizationProvider>
   );
 };

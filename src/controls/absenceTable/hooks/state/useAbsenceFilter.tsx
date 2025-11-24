@@ -1,8 +1,18 @@
 import React, { useState } from 'react';
 import { AbsenceType } from "../../api/types/types";
+import { CACHE_FILTER_SID } from '../../constants';
+import { CacheController } from '../../tools/CacheController';
 
 export function useAbsenceFilter() {
-  const [filter, setFilter] = useState<number[]>([]);
+  const [filterState, setFilterState] = useState<number[]>(() => {
+    return CacheController.load<number[]>(CACHE_FILTER_SID) || [];
+  });
+
+  const setFilter = (newFilter: number[]) => {
+    setFilterState(newFilter);
+    CacheController.save(CACHE_FILTER_SID, newFilter);
+  };
+
   const [absencesTypesState, setAbsencesTypesState] = useState<Record<AbsenceType, boolean>>({
     [AbsenceType.Vacation]: true,
     [AbsenceType.SickLeave]: true,
@@ -12,5 +22,6 @@ export function useAbsenceFilter() {
     [AbsenceType.BusinessTripOut]: true,
   });
 
-  return { filter, setFilter, absencesTypesState, setAbsencesTypesState };
+  return { filter: filterState, setFilter, absencesTypesState, setAbsencesTypesState };
 }
+

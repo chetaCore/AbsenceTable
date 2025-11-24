@@ -4,6 +4,10 @@ export const getTheme = (mode: PaletteMode) => {
   const theme = createTheme({
     palette: {
       mode,
+      background: {
+        default: mode === "light" ? "#ffffff" : "#353535",
+        paper:   mode === "light" ? "#ffffff" : "#353535",
+      },
     },
   });
 
@@ -12,84 +16,61 @@ export const getTheme = (mode: PaletteMode) => {
       MuiDataGrid: {
         styleOverrides: {
           root: {
-            backgroundColor: mode === 'light' ? '#f8fafc' : '#334155',
-            '& .stickyColumnHeader': {
-              position: 'sticky',
+            backgroundColor: theme.palette.background.default,
+            "& .stickyColumnHeader": {
+              position: "sticky",
               left: 0,
               zIndex: theme.zIndex.appBar + 1,
-              backgroundColor: mode === 'light' ? '#d3d3d4ff' : '#1e293b',
+              backgroundColor: mode === "light" ? "#d3d3d4ff" : "#1e293b",
             },
-            '& .stickyColumn': {
-              position: 'sticky',
+            "& .stickyColumn": {
+              position: "sticky",
               left: 0,
               zIndex: 2,
-              backgroundColor: mode === 'light' ? '#f8fafc' : '#334155',
+              backgroundColor: theme.palette.background.default,
             },
-            '& .stickyColumn::after': {
+            "& .stickyColumn::after": {
               content: '""',
-              position: 'absolute',
+              position: "absolute",
               right: 0,
               top: 0,
-              height: '100%',
-              width: '2px',
-              backgroundColor: mode === 'light' ? '#d1d5db' : '#1e293b',
+              height: "100%",
+              width: "2px",
+              backgroundColor: mode === "light" ? "#d1d5db" : "#1e293b",
             },
             '& .MuiDataGrid-cell': {
               padding: 0,
-              boxSizing: 'border-box',
-              lineHeight: 1,
-              height: 'auto',
             },
-            '& .MuiDataGrid-cell:focus': { outline: 'none' },
-            '& .MuiDataGrid-cell:focus-within': { outline: 'none' },
-            '& .MuiDataGrid-cell--selected': { backgroundColor: 'inherit !important' },
-            '& .MuiDataGrid-row.Mui-selected': { backgroundColor: 'inherit !important' },
+          },
+        },
+      },
+
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            backgroundColor: theme.palette.background.paper,
           },
         },
       },
       MuiButton: {
         styleOverrides: {
           root: {
-            textTransform: 'none',
-            borderRadius: 16,
-            px: 2,
-            py: 0.5,
+            borderRadius: 4,
             minHeight: 36,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
+            padding: '6px 12px',
+            backgroundColor: 'transparent',
+            border: '1px solid',
+            borderColor: mode === 'light' ? '#c4c4c4' : '#555555',
+            color: mode === 'light' ? '#000' : '#fff',
+            textTransform: 'none',
+            fontSize: 14,
+            '&:hover': {
+              backgroundColor: 'transparent',
+              borderColor: mode === 'light' ? '#999' : '#888',
+            },
           },
         },
       },
-      MuiDivider: {
-        styleOverrides: {
-          root: {
-            backgroundColor: mode === 'light' ? '#ccc' : '#64748b',
-          },
-        },
-      },
-      MuiInputAdornment: {
-        styleOverrides: {
-          root: {
-            '& .MuiSvgIcon-root': { fontSize: 20 },
-          },
-        },
-      },
-      MuiPaper: {
-        styleOverrides: {
-          root: {
-            backgroundColor: mode === 'light' ? '#f8fafc' : '#334155',
-          },
-        },
-      },
-      MuiDialog: {
-        styleOverrides: {
-          paper: {
-            borderRadius: 16,
-          },
-        },
-      },
-      
     },
   });
 };

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IRemoteComponentCoverApi } from '@directum/sungero-remote-component-types';
+import { IRemoteComponentContext, IRemoteComponentCoverApi, Theme } from '@directum/sungero-remote-component-types';
 import { Alert, AlertTitle, Backdrop, Box, Button, CircularProgress, ThemeProvider } from '@mui/material';
 import { getTheme } from './tools/tableStyle';
 import { AbsenceToolbar } from './components/AbsenceToolbar';
@@ -9,9 +9,10 @@ import { useEmployeeData } from './hooks/state/useEmployeeData';
 import { usePeriod } from './hooks/state/usePeriod';
 import { useThemeSwitcher } from './hooks/state/useThemeSwitcher';
 import { useLoadingAndErrors } from './hooks/state/useLoadingAndErrors';
+import { useAbsenceActions } from './hooks/api/useAbsencesActions';
 
-export const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api }) => {
-  const { theme, toggleTheme } = useThemeSwitcher(); //Получить тему комопонента.
+export const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi, context: IRemoteComponentContext}> = ({ api, context }) => {
+  const { theme, setTheme } = useThemeSwitcher(context.theme == Theme.Default ? "light" : "dark"); //Получить тему комопонента.
   const { period, setPeriod } = usePeriod();  //Получить период отображения отсутвий.
   const { filter, setFilter, absencesTypesState, setAbsencesTypesState } = useAbsenceFilter(); //Получить фильтр сотрудников и сосотояние отображения типов остутвий.
   const { isLoading, errors, handleLoadingChange, handleError, clearErrors } = useLoadingAndErrors(); //Получить ошибки и признак загрузки.
@@ -20,35 +21,35 @@ export const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api 
   const [isWideColumns, setIsWideColumns] = useState(false);
   const [isShowEmptyEmployees, setIsShowEmptyEmployees] = useState(false);
 
-  const { employees, allEmployees, absences, refreshAbcences, refreshEmployees } = useEmployeeData({
+  const { employees, allEmployees, absences, canUseToolbar, refreshAbcences, refreshEmployees } = useEmployeeData({
     filter,
     period,
     onLoadingChange: handleLoadingChange,
     onError: handleError,
   });
 
+  const { createAbsence, removeAbsence, editAbsence } = useAbsenceActions(canUseToolbar, refreshAbcences); //Получить действия с отутсвиями.
+
   return (
     <ThemeProvider theme={getTheme(theme)}>
       <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
         <AbsenceToolbar
           absencesTypesState={absencesTypesState}
-          allEmployees={allEmployees}
-          employees={employees}
+          employees={allEmployees}
           abcences={absences}
-          filter={filter}
           period={period}
           theme={theme}
           isShowIcons={isShowIcons}
           isWideColumns={isWideColumns}
           isShowEmptyEmployees={isShowEmptyEmployees}
-          onRefresh={refreshAbcences}
           onAbsencesTypesStateToggle={setAbsencesTypesState}
           onShowIconClick={setIsShowIcons}
-          onFilterValueChange={setFilter}
           onPeriodChange={setPeriod}
-          onThemeChanged={toggleTheme}
+          onThemeChanged={setTheme}
           onScaleChanged={setIsWideColumns}
           onShowEmptyEmployeesChanged={setIsShowEmptyEmployees}
+          onCreateAbsence={createAbsence}
+          onRemoveAbsence={removeAbsence}
         />
 
         {errors.length > 0 && (
@@ -79,6 +80,9 @@ export const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api 
         )}
 
         <AbsenceGrid
+          theme={theme}
+          filter={filter}
+          allEmployees={allEmployees}
           employees={employees}
           absences={absences}
           period={period}
@@ -87,6 +91,9 @@ export const AbsenceTable: React.FC<{ api: IRemoteComponentCoverApi }> = ({ api 
           isWideColumns={isWideColumns}
           isShowEmptyEmployees={isShowEmptyEmployees}
           isLoading={isLoading}
+          onEditAbsence={editAbsence}
+          onRemoveAbsence={removeAbsence}
+          onFilterChange={setFilter}
         />
 
         {/* Индикатор загрузки */}

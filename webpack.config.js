@@ -90,7 +90,6 @@ module.exports = (env, argv) => {
     [
       new MiniCssExtractPlugin({ 
         filename: devMode ? 'css/[name].css' : 'css/[name].[contenthash:8].css',
-        // Убрать insert, если требуется поднять приоритет стилей стороннего контрола над стилями веб клиента.
         insert: linkTag => document.head.prepend(linkTag)
       }),
       new ModuleFederationPlugin({

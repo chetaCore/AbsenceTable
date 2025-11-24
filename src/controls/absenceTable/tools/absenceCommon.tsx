@@ -1,3 +1,4 @@
+import React from 'react';
 import { AbsenceType } from "../api/types/types";
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import BeachAccessIcon from '@mui/icons-material/BeachAccess';
@@ -5,13 +6,10 @@ import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-import { isPlainObject, camelCase } from "lodash";
-import { colors } from "@mui/material";
-
+import { TFunction } from "react-i18next";
 
 /**
  * Получить уникальный ключ поля для колонки по дате.
- * Пример: 2025-10-30
  */
 export function getFieldKeyByDate(date: Date): string {
   const year = date.getFullYear();
@@ -33,30 +31,37 @@ export function stripTime(date: Date): Date {
   return copy;
 }
 
-export function getColor(type: AbsenceType): string {
-  switch (type) {
-    case AbsenceType.Vacation:
-      return '#FFB300';       // Ярко-желтый (Золотой) — для отпуска
-    case AbsenceType.SickLeave:
-      return '#D32F2F';       // Красный — для больничного
-    case AbsenceType.JobDeparture:
-      return '#FF5722';       // Тёплый оранжевый — для увольнения
-    case AbsenceType.LeaveOfAbs4h:
-      return '#9C27B0';       // Фиолетовый — для 4-х часового отпуска
-    case AbsenceType.RemoteWork:
-      return '#388E3C';       // Тёмно-зеленый — для удалённой работы
-    case AbsenceType.BusinessTripOut:
-      return '#1976D2';       // Синий — для командировки
-    default:
-      return '#BDBDBD';       // Серая палитра для неопределённого типа
-  }
-}
+export function getColor(type: AbsenceType, themeMode: 'light' | 'dark'): string {
+  const colorsLight: Record<AbsenceType, string> = {
+    [AbsenceType.Vacation]: '#fcbf49CC',
+    [AbsenceType.SickLeave]: '#d62828CC',
+    [AbsenceType.JobDeparture]: '#f77f00CC',
+    [AbsenceType.LeaveOfAbs4h]: '#b5ff9dCC',
+    [AbsenceType.RemoteWork]: '#588157CC',
+    [AbsenceType.BusinessTripOut]: '#c5b3ffCC'
+  };
 
+  const colorsDark: Record<AbsenceType, string> = {
+    [AbsenceType.Vacation]: '#ff6b6bAA',
+    [AbsenceType.SickLeave]: '#ffb86bAA',
+    [AbsenceType.JobDeparture]: '#ffd93dAA',
+    [AbsenceType.LeaveOfAbs4h]: '#4cd964AA',
+    [AbsenceType.RemoteWork]: '#00b6d8AA',
+    [AbsenceType.BusinessTripOut]: '#8b7bffAA'
+  };
+
+
+  if (type in AbsenceType) {
+    return themeMode === 'dark' ? colorsDark[type] : colorsLight[type];
+  }
+
+  return themeMode === 'dark' ? '#757575' : '#BDBDBD';
+}
 
 export function getIcon(type: AbsenceType): any {
   switch (type) {
     case AbsenceType.Vacation:
-      return  BeachAccessIcon ;
+      return BeachAccessIcon;
     case AbsenceType.SickLeave:
       return MedicalServicesIcon;
     case AbsenceType.JobDeparture:
@@ -72,21 +77,21 @@ export function getIcon(type: AbsenceType): any {
   }
 }
 
-export function getAbsenceTypeName(type: AbsenceType): string {
+export function getAbsenceTypeName(type: AbsenceType, t: TFunction): string {
   switch (type) {
     case AbsenceType.Vacation:
-      return "Отпуск";
+      return t('absenceTypes.vacation');
     case AbsenceType.SickLeave:
-      return "Больничный";
+      return t('absenceTypes.sickLeave');
     case AbsenceType.JobDeparture:
-      return "Командировка";
+      return t('absenceTypes.jobDeparture');
     case AbsenceType.LeaveOfAbs4h:
-      return "Отгул (менее 4 часов)";
+      return t('absenceTypes.leaveOfAbs4h');
     case AbsenceType.RemoteWork:
-      return "Удалённая работа";
+      return t('absenceTypes.remoteWork');
     case AbsenceType.BusinessTripOut:
-      return "Выезд по работе";
+      return t('absenceTypes.businessTripOut');
     default:
-      return "Неизвестно";
+      return t('absenceTypes.unknown');
   }
 }

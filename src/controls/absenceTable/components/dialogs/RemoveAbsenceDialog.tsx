@@ -13,16 +13,19 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { Employee, EmployeeAbsence } from '../../api/types/types';
-import { getAbsenceTypeName } from '../../tools/absenceCommon';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
+import { RequestResult } from '../../api/api';
+import { RemoveAbsenceDTO } from '../../api/dto';
+import { useTranslation } from 'react-i18next';
+import { getAbsenceTypeName } from '../../tools/absenceCommon';
 
 interface RemoveAbsenceDialogProps {
   open: boolean;
   employees: Employee[];
   absences: EmployeeAbsence[];
   onClose: () => void;
-  onRemove: (absenceId: number) => Promise<void>;
+  onRemove: (data: RemoveAbsenceDTO) => Promise<RequestResult>;
 }
 
 export const RemoveAbsenceDialog: React.FC<RemoveAbsenceDialogProps> = ({
@@ -36,6 +39,7 @@ export const RemoveAbsenceDialog: React.FC<RemoveAbsenceDialogProps> = ({
   const [absenceId, setAbsenceId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const filteredAbsences = useMemo(() => {
     if (!employeeId) return [];
@@ -47,7 +51,7 @@ export const RemoveAbsenceDialog: React.FC<RemoveAbsenceDialogProps> = ({
     setLoading(true);
     setError(null);
     try {
-      await onRemove(absenceId);
+      await onRemove({absenceId: absenceId});
       onClose();
     } catch (e: any) {
       setError(e?.message || 'Ошибка при удалении отсутствия');
@@ -95,7 +99,7 @@ export const RemoveAbsenceDialog: React.FC<RemoveAbsenceDialogProps> = ({
           <Autocomplete
             options={filteredAbsences}
             getOptionLabel={(option) =>
-              `${getAbsenceTypeName(option.type)} — ${dayjs(option.startDate).format('DD.MM HH:mm')} → ${dayjs(option.endDate).format('DD.MM HH:mm')}`
+              `${getAbsenceTypeName(option.type, t)} — ${dayjs(option.startDate).format('DD.MM HH:mm')} → ${dayjs(option.endDate).format('DD.MM HH:mm')}`
             }
             value={filteredAbsences.find((a) => a.id === absenceId) || null}
             onChange={(_, newValue) => setAbsenceId(newValue ? newValue.id : null)}

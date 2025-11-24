@@ -1,11 +1,15 @@
 import React from 'react';
-import { Box, Button } from "@mui/material";
+import { Box, Button, Paper, Stack } from "@mui/material";
 import { CalendarMonth } from '@mui/icons-material';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ru } from 'date-fns/locale';
-import { startOfWeek, endOfWeek, addDays, subDays } from 'date-fns';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs, { Dayjs } from 'dayjs';
+import weekday from 'dayjs/plugin/weekday';
+import { addDays, differenceInDays } from 'date-fns';
 import { Period } from '../api/types/types';
+import { MAX_PERIOD_PICKER_PERIOD_DAYS } from '../constants';
+
+dayjs.extend(weekday);
 
 interface PeriodPickerProps {
   period: Period;
@@ -18,93 +22,84 @@ export const PeriodPicker: React.FC<PeriodPickerProps> = ({
 }) => {
   const { startDate, endDate } = period;
 
-  const today = new Date();
-  const rangeStart = subDays(today, 31);
-  const rangeEnd = addDays(today, 31);
+  const handleStartChange = (value: Dayjs | null) => {
+    if (!value) return;
+    const date = value.toDate();
+    let newEnd = endDate;
+
+    if (differenceInDays(newEnd, date) > MAX_PERIOD_PICKER_PERIOD_DAYS) {
+      newEnd = addDays(date, MAX_PERIOD_PICKER_PERIOD_DAYS);
+    }
+    if (date > newEnd) newEnd = date;
+
+    onPeriodChange({ startDate: date, endDate: newEnd });
+  };
+
+  const handleEndChange = (value: Dayjs | null) => {
+    if (!value) return;
+    const date = value.toDate();
+    let newStart = startDate;
+
+    if (differenceInDays(date, newStart) > MAX_PERIOD_PICKER_PERIOD_DAYS) {
+      newStart = addDays(date, -MAX_PERIOD_PICKER_PERIOD_DAYS);
+    }
+    if (date < newStart) newStart = date;
+
+    onPeriodChange({ startDate: newStart, endDate: date });
+  };
 
   const handleThisWeek = () => {
-    const start = startOfWeek(today, { weekStartsOn: 1 });
-    const end = endOfWeek(today, { weekStartsOn: 1 });
-
-    const safeStart = start < rangeStart ? rangeStart : start;
-    const safeEnd = end > rangeEnd ? rangeEnd : end;
-
-    onPeriodChange({ startDate: safeStart, endDate: safeEnd });
+    const today = dayjs();
+    const start = today.weekday(1);
+    const end = today.weekday(7); 
+    onPeriodChange({ startDate: start.toDate(), endDate: end.toDate() });
   };
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ru}>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1,
-          borderRadius: '16px',
-          overflow: 'hidden',
-          width: '100%',
-          maxWidth: 400,
-          p: 1,
-        }}
-      >
-        {/* Выбор начальной даты */}
-        <DatePicker
-          label="Начало периода"
-          value={startDate}
-          minDate={rangeStart}
-          maxDate={endDate > rangeEnd ? rangeEnd : endDate}
-          onChange={(date) => {
-            if (!date) return;
-            const newStart = date > endDate ? endDate : date;
-            onPeriodChange({ startDate: newStart as Date, endDate });
-          }}
-          slots={{ openPickerIcon: CalendarMonth }}
-          slotProps={{
-            textField: {
-              size: 'small',
-              variant: 'outlined',
-            } as any,
-          }}
-        />
+    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
+      <Stack spacing={1}>
+        <Stack direction="row" spacing={2} sx={{ pt: 1 }}>
+          <Paper
+            elevation={3}>
+            
+            <DatePicker
+              label="Начало периода"
+              value={dayjs(startDate)}
+              onChange={(newValue) => handleStartChange(newValue as Dayjs | null)}
+              slots={{ openPickerIcon: CalendarMonth }}
+              slotProps={{ textField: { size: 'small', variant: 'outlined' } as any }}
+              sx={{ width: 150 }}
+            />
+          </Paper>
 
-        {/* Выбор конечной даты */}
-        <DatePicker
-          label="Конец периода"
-          value={endDate}
-          minDate={startDate < rangeStart ? rangeStart : startDate}
-          maxDate={rangeEnd}
-          onChange={(date) => {
-            if (!date) return;
-            const newEnd = date < startDate ? startDate : date;
-            onPeriodChange({ startDate, endDate: newEnd as Date });
-          }}
-          slots={{ openPickerIcon: CalendarMonth }}
-          slotProps={{
-            textField: {
-              size: 'small',
-              variant: 'outlined',
-            } as any,
-          }}
-        />
+          <Paper
+            elevation={3}>
+            <DatePicker
+              label="Конец периода"
+              value={dayjs(endDate)}
+              onChange={(newValue) => handleEndChange(newValue as Dayjs | null)}
+              slots={{ openPickerIcon: CalendarMonth }}
+              slotProps={{ textField: { size: 'small', variant: 'outlined' } as any }}
+              sx={{ width: 150 }}
+            />
+          </Paper>
+        </Stack>
 
-        {/* Кнопка "Эта неделя" */}
-        <Button
-          variant="contained"
+        <Paper
+          elevation={3}
           sx={{
-            mt: 1,
-            bgcolor: '#1976d2',
-            '&:hover': { bgcolor: '#125ea5' },
-            borderRadius: '16px',
-            textTransform: 'none',
-            px: 2,
-            py: 0.5,
-            minHeight: 36,
-            width: 300,
-          }}
-          onClick={handleThisWeek}
-        >
-          Эта неделя
-        </Button>
-      </Box>
+            width: '100%',
+          }}>
+          <Button
+            fullWidth
+            onClick={handleThisWeek}
+            variant='outlined'
+            color='inherit'
+          >
+            Эта неделя
+          </Button>
+        </Paper>
+      </Stack>
     </LocalizationProvider>
   );
 };

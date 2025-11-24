@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Employee } from '../../api/types/types';
 import { getEmployees } from '../../api/odata';
+import { useTranslation } from 'react-i18next';
+import { EmployeeDTO } from '../../api/dto';
+import humps from "humps";
 
 interface UseEmployeesProps {
   filter?: number[];
@@ -15,6 +18,8 @@ export function useEmployees({
   onError,
   onEmployeesChange,
 }: UseEmployeesProps = {}) {
+
+  const { t } = useTranslation();
   const [allEmployees, setAllEmployees] = useState<Employee[]>([]);
 
   const loadEmployees = useCallback(async () => {
@@ -23,17 +28,31 @@ export function useEmployees({
     try {
       onLoadingChange?.(true);
 
-      const result = await getEmployees();
-      if (!result.success || !result.data) {
-        throw new Error(result.error ?? 'Ошибка загрузки сотрудников');
+      const response = await getEmployees();
+
+      if (!response.success || !response.data || response.data.error) {
+        throw new Error(response.error ?? response.data?.error ?? t('errors.employeeLoadError'));
       }
 
+      const parsed = JSON.parse(response.data.result ?? "[]");
+
+      const dtos = humps.camelizeKeys(parsed) as EmployeeDTO[];
+
+      const mapped: Employee[] = dtos.map((e) => ({
+        id: e.id,
+        name: e.name,
+        personalPhoto: e.personalPhoto,
+        department: e.department,
+        uri: e.uri
+      }));
+
       if (!cancelled) {
-        setAllEmployees(result.data);
+        setAllEmployees(mapped);
       }
+
     } catch (error: any) {
       if (!cancelled) {
-        onError?.(error.message || 'Неизвестная ошибка');
+        onError?.(error.message || t('errors.unexpectedError'));
       }
     } finally {
       if (!cancelled) {
@@ -44,17 +63,16 @@ export function useEmployees({
     return () => {
       cancelled = true;
     };
-  }, [onLoadingChange, onError]);
+  }, [onLoadingChange, onError, t]);
 
   useEffect(() => {
     loadEmployees();
   }, [loadEmployees]);
 
   const employees = useMemo(() => {
-    const filtered =
-      filter.length > 0
-        ? allEmployees.filter((e) => filter.includes(e.id))
-        : allEmployees;
+    const filtered = filter.length > 0
+      ? allEmployees.filter((e) => filter.includes(e.id))
+      : allEmployees;
 
     onEmployeesChange?.(filtered);
     return filtered;

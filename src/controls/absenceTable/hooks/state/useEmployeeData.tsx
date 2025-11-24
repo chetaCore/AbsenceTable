@@ -3,7 +3,6 @@ import { Employee, EmployeeAbsence } from '../../api/types/types';
 import { useEmployeeAbsences } from '../api/useEmployeeAbsences';
 import { useEmployees } from '../api/useEmployees';
 
-
 export function useEmployeeData({ filter, period, onLoadingChange, onError }: any) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [absences, setAbsences] = useState<EmployeeAbsence[]>([]);
@@ -19,7 +18,7 @@ export function useEmployeeData({ filter, period, onLoadingChange, onError }: an
   );
 
   const { allEmployees, refreshEmployees } = useEmployees(employeeParams);
-  const { refreshAbcences } = useEmployeeAbsences(absencesParams);
+  const { canUseToolbar, refreshAbcences  } = useEmployeeAbsences(absencesParams);
 
-  return { employees, allEmployees, absences, refreshAbcences, refreshEmployees };
+  return { employees, allEmployees, absences, canUseToolbar, refreshAbcences, refreshEmployees };
 }
